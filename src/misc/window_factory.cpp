@@ -28,6 +28,7 @@ Anvil::WindowUniquePtr Anvil::WindowFactory::create_window(WindowPlatform       
                                                            unsigned int            in_height,
                                                            bool                    in_closable,
                                                            PresentCallbackFunction in_present_callback_func,
+														   InputCallbackFunction   in_input_callback_func,
                                                            bool                    in_visible)
 {
     WindowUniquePtr result_ptr(nullptr,
@@ -65,6 +66,7 @@ Anvil::WindowUniquePtr Anvil::WindowFactory::create_window(WindowPlatform       
                                                           in_height,
                                                           in_closable,
                                                           in_present_callback_func,
+														  in_input_callback_func,
                                                           in_visible);
 
                 break;
@@ -79,6 +81,7 @@ Anvil::WindowUniquePtr Anvil::WindowFactory::create_window(WindowPlatform       
                                                       in_height,
                                                       in_closable,
                                                       in_present_callback_func,
+													  in_input_callback_func,
                                                       in_visible);
 
                 break;

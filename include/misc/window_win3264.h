@@ -56,6 +56,7 @@ namespace Anvil
                                              unsigned int                   in_height,
                                              bool                           in_closable,
                                              Anvil::PresentCallbackFunction in_present_callback_func,
+											 Anvil::InputCallbackFunction   in_input_callback_func,
                                              bool                           in_visible);
 
         /* Creates a window wrapper instance from an existing window handle.
@@ -104,12 +105,14 @@ namespace Anvil
                       unsigned int                   in_width,
                       unsigned int                   in_height,
                       bool                           in_closable,
-                      Anvil::PresentCallbackFunction in_present_callback_func);
+                      Anvil::PresentCallbackFunction in_present_callback_func, 
+					  Anvil::InputCallbackFunction   in_input_callback_func);
         WindowWin3264(HWND                           in_handle,
                       const std::string&             in_title,
                       unsigned int                   in_width,
                       unsigned int                   in_height,
-                      PresentCallbackFunction        in_present_callback_func);
+                      PresentCallbackFunction        in_present_callback_func, 
+					  Anvil::InputCallbackFunction   in_input_callback_func);
 
         /** Creates a new system window and prepares it for usage. */
         bool init(const bool& in_visible);
@@ -118,6 +121,10 @@ namespace Anvil
                                                       UINT   in_message_id,
                                                       WPARAM in_param_wide,
                                                       LPARAM in_param_long);
+
+		void process_message(UINT   in_message_id,
+			WPARAM in_param_wide,
+			LPARAM in_param_long);
 
         /* Private variables */
     };

@@ -31,12 +31,14 @@ Anvil::WindowWin3264::WindowWin3264(const std::string&             in_title,
                                     unsigned int                   in_width,
                                     unsigned int                   in_height,
                                     bool                           in_closable,
-                                    Anvil::PresentCallbackFunction in_present_callback_func)
+                                    Anvil::PresentCallbackFunction in_present_callback_func, 
+									Anvil::InputCallbackFunction   in_input_callback_func)
     :Window(in_title,
             in_width,
             in_height,
             in_closable,
-            in_present_callback_func)
+            in_present_callback_func, 
+			in_input_callback_func)
 {
     m_window_owned = true;
 }
@@ -46,12 +48,14 @@ Anvil::WindowWin3264::WindowWin3264(HWND                           in_handle,
                                     const std::string&             in_title,
                                     unsigned int                   in_width,
                                     unsigned int                   in_height,
-                                    Anvil::PresentCallbackFunction in_present_callback_func)
+                                    Anvil::PresentCallbackFunction in_present_callback_func,
+									Anvil::InputCallbackFunction   in_input_callback_func)
     :Window(in_title,
             in_width,
             in_height,
             true, /* in_closable */
-            in_present_callback_func)
+            in_present_callback_func, 
+			in_input_callback_func)
 {
     m_window       = in_handle;
     m_window_owned = false;
@@ -63,6 +67,7 @@ Anvil::WindowUniquePtr Anvil::WindowWin3264::create(const std::string&          
                                                     unsigned int                   in_height,
                                                     bool                           in_closable,
                                                     Anvil::PresentCallbackFunction in_present_callback_func,
+													Anvil::InputCallbackFunction   in_input_callback_func,
                                                     bool                           in_visible)
 {
     WindowUniquePtr result_ptr(
@@ -70,7 +75,8 @@ Anvil::WindowUniquePtr Anvil::WindowWin3264::create(const std::string&          
                                  in_width,
                                  in_height,
                                  in_closable,
-                                 in_present_callback_func),
+                                 in_present_callback_func, 
+								 in_input_callback_func),
         std::default_delete<Anvil::Window>()
     );
 
@@ -133,7 +139,8 @@ Anvil::WindowUniquePtr Anvil::WindowWin3264::create(HWND in_window_handle)
                                  std::string(&window_title.at(0) ),
                                  window_size[0],
                                  window_size[1],
-                                 nullptr) /* present_callback_func_ptr */
+                                 nullptr, /* present_callback_func_ptr */
+								 nullptr) /* _input_callback_func_ptr */
     );
 
     if (result_ptr)
@@ -287,6 +294,9 @@ LRESULT CALLBACK Anvil::WindowWin3264::msg_callback_pfn_proc(HWND   in_window_ha
     WindowWin3264* window_ptr = reinterpret_cast<WindowWin3264*>(::GetWindowLongPtr(in_window_handle,
                                                                                     GWLP_USERDATA) );
 
+	// Custom -> process the message
+	window_ptr->process_message(in_message_id, in_param_wide, in_param_long);
+
     switch (in_message_id)
     {
         case WM_DESTROY:
@@ -332,6 +342,81 @@ LRESULT CALLBACK Anvil::WindowWin3264::msg_callback_pfn_proc(HWND   in_window_ha
                          in_message_id,
                          in_param_wide,
                          in_param_long);
+}
+
+void Anvil::WindowWin3264::process_message(UINT   in_message_id,
+	WPARAM in_param_wide,
+	LPARAM in_param_long)
+{
+	WORD x, y;
+
+	x = LOWORD(in_param_long);
+	y = HIWORD(in_param_long);
+
+	switch (in_message_id)
+	{
+		// Keyboard
+	case WM_KEYDOWN:
+	{
+		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Keyboard, WindowInput::Action::KeyDown, (char)in_param_wide));
+		break;
+	}
+	case WM_KEYUP:
+	{
+		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Keyboard, WindowInput::Action::KeyUp, (char)in_param_wide));
+		break;
+	}
+
+	// Mouse
+	case WM_LBUTTONDOWN:
+	{
+		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, WindowInput::Action::KeyDown, WindowInput::Complement::Left, (uint32_t)x, (uint32_t)y));
+		break;
+	}
+	case WM_LBUTTONUP:
+	{
+		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, WindowInput::Action::KeyUp, WindowInput::Complement::Left, (uint32_t)x, (uint32_t)y));
+		break;
+	}
+	case WM_RBUTTONDOWN:
+	{
+		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, WindowInput::Action::KeyDown, WindowInput::Complement::Right, (uint32_t)x, (uint32_t)y));
+		break;
+	}
+	case WM_RBUTTONUP:
+	{
+		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, WindowInput::Action::KeyUp, WindowInput::Complement::Right, (uint32_t)x, (uint32_t)y));
+		break;
+	}
+	case WM_MBUTTONDOWN:
+	{
+		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, WindowInput::Action::KeyDown, WindowInput::Complement::Middle, (uint32_t)x, (uint32_t)y));
+		break;
+	}
+	case WM_MBUTTONUP:
+	{
+		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, WindowInput::Action::KeyUp, WindowInput::Complement::Middle, (uint32_t)x, (uint32_t)y));
+		break;
+	}
+	case WM_MOUSEWHEEL:
+	{
+		// Determine the wheel roll amount
+		int amount = (int)(short)HIWORD(in_param_wide);
+		if (amount != 0) amount /= WHEEL_DELTA; // Adjust to -1~1 range
+
+		// Determine the action
+		WindowInput::Action action = amount > 0 ? action = WindowInput::Action::ScrollUp : action = WindowInput::Action::ScrollDown;
+
+		// Get the cursos position
+		POINT p;
+		GetCursorPos(&p);
+		HWND Handle = WindowFromPoint(p);
+		ScreenToClient(Handle, &p);
+
+		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, action, WindowInput::Complement::Middle, p.x, p.y));
+		break;
+	}
+	}
 }
 
 /* Please see header for specification */

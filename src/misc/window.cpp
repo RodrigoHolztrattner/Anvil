@@ -28,7 +28,8 @@ Anvil::Window::Window(const std::string&      in_title,
                       unsigned int            in_width,
                       unsigned int            in_height,
                       bool                    in_closable,
-                      PresentCallbackFunction in_present_callback_func)
+                      PresentCallbackFunction in_present_callback_func,
+					  InputCallbackFunction   in_input_callback_func)
     :CallbacksSupportProvider(WINDOW_CALLBACK_ID_COUNT),
      m_closable              (in_closable),
      m_height                (in_height),
