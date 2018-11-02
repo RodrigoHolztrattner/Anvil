@@ -24,6 +24,69 @@
 
 namespace Anvil
 {
+	// Input mode
+	struct WindowInput
+	{
+	public:
+
+		enum class Type
+		{
+			Unknow,
+			Keyboard,
+			Mouse
+		};
+		enum class Action
+		{
+			Unknow,
+			KeyUp,
+			KeyDown,
+			KeyRepeat,
+			KeyPosition,
+			ScrollUp,
+			ScrollDown
+		};
+		enum class Complement
+		{
+			Unknow,
+			Left,
+			Middle,
+			Right
+		};
+
+		WindowInput() {}
+		WindowInput(Type _type, Action _action, Complement _complement) : type(_type), action(_action), complement(_complement) {}
+		WindowInput(Type _type, Action _action, Complement _complement, int32_t _mouseX, int32_t _mouseY) : type(_type), action(_action), complement(_complement), firstParam(_mouseX), secondParam(_mouseY) {}
+		WindowInput(Type _type, Action _action, char _key) : type(_type), action(_action), firstParam((int32_t)_key) {}
+
+		// Return the mouse x/y position
+		uint32_t GetMouseX() { return uint32_t(firstParam); }
+		uint32_t GetMouseY() { return uint32_t(secondParam); }
+
+		// Return the keyboard key
+		char GetKey() { return (char)firstParam; }
+
+		// Return the action/type/complement
+		Action GetAction() { return action; }
+		Type GetType() { return type; }
+		Complement GetComplement() { return complement; }
+
+		// Return the first/second param
+		int32_t GetFirstParam() { return firstParam; }
+		int32_t GetSecondParam() { return secondParam; }
+
+		// Return the wheel roll amount and direction
+		int32_t GetRollAmount() { return firstParam; }
+		int32_t GetRollDirection() { return secondParam; }
+
+	private:
+
+		Type type;
+		Action action;
+		Complement complement;
+		uint32_t firstParam;
+		uint32_t secondParam;
+	};
+
     /* Note: Matches VkSampleLocationEXT in terms of the layout and size.
      */
     typedef struct SampleLocation
