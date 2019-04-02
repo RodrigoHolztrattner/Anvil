@@ -38,6 +38,9 @@
     #include <unistd.h>
 #endif
 
+#ifdef _MSC_VER
+	#pragma warning(disable : 4244)
+#endif
 
 /** Creates a new sub-directory in the process' working directory.
  *
