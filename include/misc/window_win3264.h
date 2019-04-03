@@ -98,6 +98,15 @@ namespace Anvil
          */
         void set_title(const std::string& in_new_title) override;
 
+		/* Returns window's cursor position */
+		void get_cursor_position(uint32_t& x, uint32_t& y) const override;
+
+		/* Set the window's cursor position */
+		void set_cursor_position(uint32_t x, uint32_t y) override;
+
+		/* Hide/show the window's cursor */
+		void show_cursor(bool show) override;
+
     private:
         /* Private functions */
 

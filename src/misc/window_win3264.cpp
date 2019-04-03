@@ -471,3 +471,26 @@ void Anvil::WindowWin3264::set_title(const std::string& in_new_title)
     ::SetWindowText(m_window,
                     in_new_title.c_str() );
 }
+
+void Anvil::WindowWin3264::get_cursor_position(uint32_t& x, uint32_t& y) const
+{
+	// Get the cursos position (currently only works on windows
+	POINT p;
+	GetCursorPos(&p);
+	HWND Handle = WindowFromPoint(p);
+	ScreenToClient(Handle, &p);
+
+	// Set the mouse x and y
+	x = static_cast<uint32_t>(p.x);
+	y = static_cast<uint32_t>(p.y);
+}
+
+void Anvil::WindowWin3264::set_cursor_position(uint32_t x, uint32_t y)
+{
+	SetCursorPos(x, y);
+}
+
+void Anvil::WindowWin3264::show_cursor(bool show)
+{
+	ShowCursor(show);
+}

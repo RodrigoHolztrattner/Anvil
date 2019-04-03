@@ -157,6 +157,25 @@ namespace Anvil
             return m_width;
         }
 
+		/* Returns window's cursor position */
+		virtual void get_cursor_position(uint32_t& x, uint32_t& y) const
+		{
+			x = 0;
+			y = 0;
+		}
+
+		/* Set the window's cursor position */
+		virtual void set_cursor_position(uint32_t, uint32_t)
+		{
+
+		}
+
+		/* Hide/show the window's cursor */
+		virtual void show_cursor(bool)
+		{
+
+		}
+
         /** Makes the window responsive to user's action and starts updating window contents.
          *
          *  This function will *block* the calling thread. To unblock it, call close().
