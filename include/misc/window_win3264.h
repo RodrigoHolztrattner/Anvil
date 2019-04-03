@@ -135,6 +135,8 @@ namespace Anvil
 			WPARAM in_param_wide,
 			LPARAM in_param_long);
 
+		HCURSOR m_WindowCursor;
+
         /* Private variables */
     };
 }; /* namespace Anvil */

@@ -220,6 +220,8 @@ bool Anvil::WindowWin3264::init(const bool& in_visible)
          **/
         ::RegisterClassEx(&window_class);
 
+		m_WindowCursor = window_class.hCursor;
+
         /* Create the window */
         window_rect.left   = 0;
         window_rect.top    = 0;
@@ -492,5 +494,12 @@ void Anvil::WindowWin3264::set_cursor_position(uint32_t x, uint32_t y)
 
 void Anvil::WindowWin3264::show_cursor(bool show)
 {
-	ShowCursor(show);
+	if (show)
+	{
+		SetCursor(m_WindowCursor);
+	}
+	else
+	{
+		SetCursor(NULL);
+	}
 }
