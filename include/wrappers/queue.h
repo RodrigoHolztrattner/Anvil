@@ -97,9 +97,7 @@ namespace Anvil
 
         /** Initializes a new Vulkan queue instance.
          *
-         *  After construction, set_swapchain() should be called individually
-         *  to assign a swapchain to the queue. This is necessary in order for
-         *  present() calls to work correctly.
+         *  NOTE: This function must only be used by Anvil::*Device!
          *
          *  @param in_device_ptr         Device to retrieve the queue from.
          *  @param in_queue_family_index Index of the queue family to retrieve the queue from.
@@ -107,20 +105,41 @@ namespace Anvil
          *  @param in_mt_safe            True if queue submissions should be protected by a mutex, guaranteeing
          *                               no more than one thread at a time will ever submit a cmd buffer to the
          *                               same cmd queue.
+         *  @param in_global_priority    Global priority of the new queue. Setting this value to anything else than Anvil::QueueGlobalPriority::MEDIUM_EXT
+         *                               requires VK_EXT_queue_global_priority support.
          **/
-        static std::unique_ptr<Anvil::Queue> create(const Anvil::BaseDevice* in_device_ptr,
-                                                    uint32_t                 in_queue_family_index,
-                                                    uint32_t                 in_queue_index,
-                                                    bool                     in_mt_safe);
+        static std::unique_ptr<Anvil::Queue> create(const Anvil::BaseDevice*          in_device_ptr,
+                                                    uint32_t                          in_queue_family_index,
+                                                    uint32_t                          in_queue_index,
+                                                    bool                              in_mt_safe,
+                                                    const Anvil::QueueGlobalPriority& in_global_priority = Anvil::QueueGlobalPriority::MEDIUM_EXT);
 
         /** Destructor */
         virtual ~Queue();
+
+        /** Starts a queue debug label region. App must call end_debug_utils_label() for the same queue instance
+         *  at some point to declare the end of the label region.
+         *
+         *  Requires VK_EXT_debug_utils support. Otherwise, the call is moot.
+         *
+         *  @param in_label_name_ptr Meaning as per VkDebugUtilsLabelEXT::pLabelName. Must not be nullptr.
+         *  @param in_color_vec4_ptr Meaning as per VkDebugUtilsLabelEXT::color. Must not be nullptr.
+         */
+        void begin_debug_utils_label(const char*  in_label_name_ptr,
+                                     const float* in_color_vec4_ptr);
 
         /** Updates sparse resource memory bindings using this queue.
          *
          *  @param in_update Detailed information about the update to be carried out.
          **/
         bool bind_sparse_memory(Anvil::SparseMemoryBindingUpdateInfo& in_update);
+
+        /** Ends a queue debug label region. Requires a preceding begin_debug_utils_label() call.
+         *
+         *  Requires VK_EXT_debug_utils support. Otherwise, the call is moot.
+         *
+         */
+        void end_debug_utils_label();
 
         /** Retrieves parent device instance */
         const Anvil::BaseDevice* get_parent_device() const
@@ -140,11 +159,30 @@ namespace Anvil
             return m_queue_family_index;
         }
 
+        /** Retrieves global priority used to create the queue.
+         *
+         *  Only meaningful if VK_EXT_queue_global_priority if supported.
+         */
+        const Anvil::QueueGlobalPriority& get_queue_global_priority() const
+        {
+            return m_queue_global_priority;
+        }
+
         /** Retrieves index of the queue */
         uint32_t get_queue_index() const
         {
             return m_queue_index;
         }
+
+        /** Inserts a single queue debug label.
+         *
+         *  Requires VK_EXT_debug_utils support. Otherwise, the call is moot.
+         *
+         *  @param in_label_name_ptr Meaning as per VkDebugUtilsLabelEXT::pLabelName. Must not be nullptr.
+         *  @param in_color_vec4_ptr Meaning as per VkDebugUtilsLabelEXT::color. Must not be nullptr.
+         */
+        void insert_debug_utils_label(const char*  in_label_name_ptr,
+                                      const float* in_color_vec4_ptr);
 
         /** Presents the specified swapchain image using this queue. This queue must support presentation
          *  for the swapchain's rendering surface in order for this call to succeed.
@@ -166,10 +204,11 @@ namespace Anvil
          *
          *  @return Vulkan result for the operation.
          **/
-        VkResult present(Anvil::Swapchain*        in_swapchain_ptr,
-                         uint32_t                 in_swapchain_image_index,
-                         uint32_t                 in_n_wait_semaphores,
-                         Anvil::Semaphore* const* in_wait_semaphore_ptrs_ptr);
+        bool present(Anvil::Swapchain*                   in_swapchain_ptr,
+                     uint32_t                            in_swapchain_image_index,
+                     uint32_t                            in_n_wait_semaphores,
+                     Anvil::Semaphore* const*            in_wait_semaphore_ptrs_ptr,
+                     Anvil::SwapchainOperationErrorCode* out_present_results_ptr);
 
         /** See present() documentation for general information about this function.
          *
@@ -182,10 +221,11 @@ namespace Anvil
          *
          *  @return TODO
          **/
-        VkResult present_in_local_presentation_mode(uint32_t                         in_n_local_mode_presentation_items,
-                                                    const LocalModePresentationItem* in_local_mode_presentation_items,
-                                                    uint32_t                         in_n_wait_semaphores,
-                                                    Anvil::Semaphore* const*         in_wait_semaphore_ptrs_ptr);
+        bool present_in_local_presentation_mode(uint32_t                            in_n_local_mode_presentation_items,
+                                                const LocalModePresentationItem*    in_local_mode_presentation_items,
+                                                uint32_t                            in_n_wait_semaphores,
+                                                Anvil::Semaphore* const*            in_wait_semaphore_ptrs_ptr,
+                                                Anvil::SwapchainOperationErrorCode* out_present_results_ptr);
 
         /** See present() documentation for general information about this function.
          *
@@ -198,10 +238,11 @@ namespace Anvil
          *
          *  @return TODO
          **/
-        VkResult present_in_local_multi_device_presentation_mode(uint32_t                                    in_n_local_multi_device_mode_presentation_items,
-                                                                 const LocalMultiDeviceModePresentationItem* in_local_multi_device_mode_presentation_items,
-                                                                 uint32_t                                    in_n_wait_semaphores,
-                                                                 Anvil::Semaphore* const*                    in_wait_semaphore_ptrs_ptr);
+        bool present_in_local_multi_device_presentation_mode(uint32_t                                    in_n_local_multi_device_mode_presentation_items,
+                                                             const LocalMultiDeviceModePresentationItem* in_local_multi_device_mode_presentation_items,
+                                                             uint32_t                                    in_n_wait_semaphores,
+                                                             Anvil::Semaphore* const*                    in_wait_semaphore_ptrs_ptr,
+                                                             Anvil::SwapchainOperationErrorCode*         out_present_results_ptr);
 
         /** See present() documentation for general information about this function.
          *
@@ -214,10 +255,11 @@ namespace Anvil
          *
          *  @return TODO
          **/
-        VkResult present_in_remote_presentation_mode(uint32_t                          in_n_remote_mode_presentation_items,
-                                                     const RemoteModePresentationItem* in_remote_mode_presentation_items,
-                                                     uint32_t                          in_n_wait_semaphores,
-                                                     Anvil::Semaphore* const*          in_wait_semaphore_ptrs_ptr);
+        bool present_in_remote_presentation_mode(uint32_t                            in_n_remote_mode_presentation_items,
+                                                 const RemoteModePresentationItem*   in_remote_mode_presentation_items,
+                                                 uint32_t                            in_n_wait_semaphores,
+                                                 Anvil::Semaphore* const*            in_wait_semaphore_ptrs_ptr,
+                                                 Anvil::SwapchainOperationErrorCode* out_present_results_ptr);
 
         /** See present() documentation for general information about this function.
          *
@@ -230,12 +272,19 @@ namespace Anvil
          *
          *  @return TODO
          **/
-        VkResult present_in_sum_presentation_mode(uint32_t                       in_n_sum_mode_presentation_items,
-                                                  const SumModePresentationItem* in_sum_mode_presentation_items,
-                                                  uint32_t                       in_n_wait_semaphores,
-                                                  Anvil::Semaphore* const*       in_wait_semaphore_ptrs_ptr);
+        bool present_in_sum_presentation_mode(uint32_t                            in_n_sum_mode_presentation_items,
+                                              const SumModePresentationItem*      in_sum_mode_presentation_items,
+                                              uint32_t                            in_n_wait_semaphores,
+                                              Anvil::Semaphore* const*            in_wait_semaphore_ptrs_ptr,
+                                              Anvil::SwapchainOperationErrorCode* out_present_results_ptr);
 
         bool submit(const SubmitInfo& in_submit_info);
+
+        /** Tells whether the queue supports protected memory operations */
+        bool supports_protected_memory_operations() const
+        {
+            return m_supports_protected_memory_operations;
+        }
 
         /** Tells whether the queue supports sparse bindings */
         bool supports_sparse_bindings() const
@@ -247,18 +296,19 @@ namespace Anvil
 
     private:
         /* Private functions */
-        VkResult present_internal   (Anvil::DeviceGroupPresentModeFlagBits in_presentation_mode,
-                                     uint32_t                              in_n_swapchains,
-                                     Anvil::Swapchain* const*              in_swapchains,
-                                     const uint32_t*                       in_swapchain_image_indices,
-                                     const uint32_t*                       in_device_masks,
-                                     uint32_t                              in_n_wait_semaphores,
-                                     Anvil::Semaphore* const*              in_wait_semaphore_ptrs);
-        void     present_lock_unlock(uint32_t                              in_n_swapchains,
-                                     const Anvil::Swapchain* const*        in_swapchains,
-                                     uint32_t                              in_n_wait_semaphores,
-                                     Anvil::Semaphore* const*              in_wait_semaphore_ptrs,
-                                     bool                                  in_should_lock);
+        bool present_internal   (Anvil::DeviceGroupPresentModeFlagBits in_presentation_mode,
+                                 uint32_t                              in_n_swapchains,
+                                 Anvil::Swapchain* const*              in_swapchains,
+                                 const uint32_t*                       in_swapchain_image_indices,
+                                 const uint32_t*                       in_device_masks,
+                                 uint32_t                              in_n_wait_semaphores,
+                                 Anvil::Semaphore* const*              in_wait_semaphore_ptrs,
+                                 Anvil::SwapchainOperationErrorCode*   out_present_results_ptr);
+        void present_lock_unlock(uint32_t                              in_n_swapchains,
+                                 const Anvil::Swapchain* const*        in_swapchains,
+                                 uint32_t                              in_n_wait_semaphores,
+                                 Anvil::Semaphore* const*              in_wait_semaphore_ptrs,
+                                 bool                                  in_should_lock);
 
         void bind_sparse_memory_lock_unlock    (Anvil::SparseMemoryBindingUpdateInfo& in_update,
                                                 bool                                  in_should_lock);
@@ -280,21 +330,25 @@ namespace Anvil
                                                 bool                                  in_should_lock);
 
         /* Constructor. Please see create() for specification */
-        Queue(const Anvil::BaseDevice* in_device_ptr,
-              uint32_t                 in_queue_family_index,
-              uint32_t                 in_queue_index,
-              bool                     in_mt_safe);
+        Queue(const Anvil::BaseDevice*          in_device_ptr,
+              uint32_t                          in_queue_family_index,
+              uint32_t                          in_queue_index,
+              bool                              in_mt_safe,
+              const Anvil::QueueGlobalPriority& in_global_priority);
 
         Queue          (const Queue&);
         Queue operator=(const Queue&);
 
         /* Private variables */
-        const Anvil::BaseDevice* m_device_ptr;
-        VkQueue                  m_queue;
-        uint32_t                 m_queue_family_index;
-        uint32_t                 m_queue_index;
-        Anvil::FenceUniquePtr    m_submit_fence_ptr;
-        bool                     m_supports_sparse_bindings;
+        const Anvil::BaseDevice*         m_device_ptr;
+        uint32_t                         m_n_debug_label_regions_started;
+        VkQueue                          m_queue;
+        const uint32_t                   m_queue_family_index;
+        const Anvil::QueueGlobalPriority m_queue_global_priority;
+        const uint32_t                   m_queue_index;
+        Anvil::FenceUniquePtr            m_submit_fence_ptr;
+        bool                             m_supports_protected_memory_operations;
+        bool                             m_supports_sparse_bindings;
     };
 }; /* namespace Anvil */
 

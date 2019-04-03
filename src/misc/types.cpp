@@ -27,6 +27,8 @@ INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::BufferUsageFlags,             
 INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::ColorComponentFlags,              VkColorComponentFlags,                 Anvil::ColorComponentFlagBits);
 INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::CompositeAlphaFlags,              VkCompositeAlphaFlagsKHR,              Anvil::CompositeAlphaFlagBits);
 INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::CullModeFlags,                    VkCullModeFlags,                       Anvil::CullModeFlagBits);
+INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::DebugMessageSeverityFlags,        VkDebugUtilsMessageSeverityFlagsEXT,   Anvil::DebugMessageSeverityFlagBits);
+INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::DebugMessageTypeFlags,            VkDebugUtilsMessageTypeFlagsEXT,       Anvil::DebugMessageTypeFlagBits);
 INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::DependencyFlags,                  VkDependencyFlags,                     Anvil::DependencyFlagBits);
 INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::DescriptorBindingFlags,           VkDescriptorBindingFlagsEXT,           Anvil::DescriptorBindingFlagBits);
 INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::DescriptorPoolCreateFlags,        VkDescriptorPoolCreateFlags,           Anvil::DescriptorPoolCreateFlagBits);
@@ -49,6 +51,7 @@ INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::QueueFlags,                   
 INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::QueryControlFlags,                VkQueryControlFlags,                   Anvil::QueryControlFlagBits);
 INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::QueryPipelineStatisticFlags,      VkQueryPipelineStatisticFlags,         Anvil::QueryPipelineStatisticFlagBits);
 INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::QueryResultFlags,                 VkQueryResultFlags,                    Anvil::QueryResultFlagBits);
+INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::ResolveModeFlags,                 VkResolveModeFlagsKHR,                 Anvil::ResolveModeFlagBits);
 INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::SampleCountFlags,                 VkSampleCountFlags,                    Anvil::SampleCountFlagBits);
 INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::ShaderStageFlags,                 VkShaderStageFlags,                    Anvil::ShaderStageFlagBits);
 INJECT_BITFIELD_HELPER_FUNC_IMPLEMENTATION(Anvil::SparseImageFormatFlags,           VkSparseImageFormatFlags,              Anvil::SparseImageFormatFlagBits);

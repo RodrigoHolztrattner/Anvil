@@ -33,21 +33,22 @@ Anvil::QueryPool::QueryPool(const Anvil::BaseDevice* in_device_ptr,
                             uint32_t                 in_n_max_concurrent_queries,
                             bool                     in_mt_safe)
     :DebugMarkerSupportProvider(in_device_ptr,
-                                VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT),
+                                Anvil::ObjectType::QUERY_POOL),
      MTSafetySupportProvider   (in_mt_safe),
      m_device_ptr              (in_device_ptr),
      m_n_max_indices           (in_n_max_concurrent_queries),
      m_query_type              (in_query_type)
 {
-    anvil_assert(in_query_type == VK_QUERY_TYPE_OCCLUSION ||
-                 in_query_type == VK_QUERY_TYPE_TIMESTAMP);
+    anvil_assert(in_query_type == VK_QUERY_TYPE_OCCLUSION                     ||
+                 in_query_type == VK_QUERY_TYPE_TIMESTAMP                     ||
+                 in_query_type == VK_QUERY_TYPE_TRANSFORM_FEEDBACK_STREAM_EXT);
 
     init(in_query_type,
          Anvil::QueryPipelineStatisticFlagBits::NONE,
          in_n_max_concurrent_queries);
 
     /* Register the pool wrapper instance */
-    Anvil::ObjectTracker::get()->register_object(Anvil::OBJECT_TYPE_QUERY_POOL,
+    Anvil::ObjectTracker::get()->register_object(Anvil::ObjectType::QUERY_POOL,
                                                   this);
 }
 
@@ -58,7 +59,7 @@ Anvil::QueryPool::QueryPool(const Anvil::BaseDevice*           in_device_ptr,
                             uint32_t                           in_n_max_concurrent_queries,
                             bool                               in_mt_safe)
     :DebugMarkerSupportProvider(in_device_ptr,
-                                VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT),
+                                Anvil::ObjectType::QUERY_POOL),
      MTSafetySupportProvider   (in_mt_safe),
      m_device_ptr              (in_device_ptr),
      m_n_max_indices           (in_n_max_concurrent_queries),
@@ -69,7 +70,7 @@ Anvil::QueryPool::QueryPool(const Anvil::BaseDevice*           in_device_ptr,
          in_n_max_concurrent_queries);
 
     /* Register the pool wrapper instance */
-    Anvil::ObjectTracker::get()->register_object(Anvil::OBJECT_TYPE_QUERY_POOL,
+    Anvil::ObjectTracker::get()->register_object(Anvil::ObjectType::QUERY_POOL,
                                                   this);
 }
 
@@ -78,7 +79,7 @@ Anvil::QueryPool::QueryPool(const Anvil::BaseDevice*           in_device_ptr,
 Anvil::QueryPool::~QueryPool()
 {
     /* Unregister the pool wrapper instance */
-    Anvil::ObjectTracker::get()->unregister_object(Anvil::OBJECT_TYPE_QUERY_POOL,
+    Anvil::ObjectTracker::get()->unregister_object(Anvil::ObjectType::QUERY_POOL,
                                                     this);
 
     if (m_query_pool_vk != VK_NULL_HANDLE)
