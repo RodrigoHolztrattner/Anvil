@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2017-2018 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2017-2019 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #include "wrappers/device.h"
 #include "wrappers/image.h"
 #include "wrappers/image_view.h"
+#include "wrappers/sampler_ycbcr_conversion.h"
 
 /* Please see header for specification */
 Anvil::ImageViewUniquePtr Anvil::ImageView::create(Anvil::ImageViewCreateInfoUniquePtr in_create_info_ptr)
@@ -52,21 +53,22 @@ Anvil::ImageViewUniquePtr Anvil::ImageView::create(Anvil::ImageViewCreateInfoUni
 
 Anvil::ImageView::ImageView(Anvil::ImageViewCreateInfoUniquePtr in_create_info_ptr)
     :DebugMarkerSupportProvider(in_create_info_ptr->get_device(),
-                                VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT),
+                                Anvil::ObjectType::IMAGE_VIEW),
      MTSafetySupportProvider   (Anvil::Utils::convert_mt_safety_enum_to_boolean(in_create_info_ptr->get_mt_safety(),
-                                                                                in_create_info_ptr->get_device   () ))
+                                                                                in_create_info_ptr->get_device   () )),
+     m_image_view              (VK_NULL_HANDLE)
 {
     m_create_info_ptr = std::move(in_create_info_ptr);
 
     /* Register the object */
-    Anvil::ObjectTracker::get()->register_object(Anvil::OBJECT_TYPE_IMAGE_VIEW,
+    Anvil::ObjectTracker::get()->register_object(Anvil::ObjectType::IMAGE_VIEW,
                                                  this);
 }
 
 Anvil::ImageView::~ImageView()
 {
     /* Unregister the object */
-    Anvil::ObjectTracker::get()->unregister_object(Anvil::OBJECT_TYPE_IMAGE_VIEW,
+    Anvil::ObjectTracker::get()->unregister_object(Anvil::ObjectType::IMAGE_VIEW,
                                                    this);
 
     if (m_image_view != VK_NULL_HANDLE)
@@ -145,21 +147,22 @@ Anvil::ImageSubresourceRange Anvil::ImageView::get_subresource_range() const
  **/
 bool Anvil::ImageView::init()
 {
-    const auto                                  aspect_mask               = m_create_info_ptr->get_aspect           ();
-    const auto                                  format                    = m_create_info_ptr->get_format           ();
-    const auto                                  image_view_type           = m_create_info_ptr->get_type             ();
-    const auto                                  n_base_layer              = m_create_info_ptr->get_base_layer       ();
-    const auto                                  n_base_mip                = m_create_info_ptr->get_base_mipmap_level();
-    const auto                                  n_layers                  = m_create_info_ptr->get_n_layers         ();
-    const auto                                  n_mips                    = m_create_info_ptr->get_n_mipmaps        ();
-    uint32_t                                    parent_image_n_layers     = 0;
-    uint32_t                                    parent_image_n_mipmaps    = 0;
-    auto                                        parent_image_ptr          = m_create_info_ptr->get_parent_image();
-    bool                                        result                    = false;
+    const auto                                  aspect_mask                  = m_create_info_ptr->get_aspect           ();
+    const auto                                  format                       = m_create_info_ptr->get_format           ();
+    const auto                                  image_view_type              = m_create_info_ptr->get_type             ();
+    const auto                                  n_base_layer                 = m_create_info_ptr->get_base_layer       ();
+    const auto                                  n_base_mip                   = m_create_info_ptr->get_base_mipmap_level();
+    const auto                                  n_layers                     = m_create_info_ptr->get_n_layers         ();
+    const auto                                  n_mips                       = m_create_info_ptr->get_n_mipmaps        ();
+    uint32_t                                    parent_image_n_layers        = 0;
+    uint32_t                                    parent_image_n_mipmaps       = 0;
+    auto                                        parent_image_ptr             = m_create_info_ptr->get_parent_image();
+    bool                                        result                       = false;
     VkResult                                    result_vk;
+    const auto                                  sampler_ycbcr_conversion_ptr = m_create_info_ptr->get_sampler_ycbcr_conversion_ptr();
     Anvil::StructChainer<VkImageViewCreateInfo> struct_chainer;
-    const auto&                                 swizzle_array             = m_create_info_ptr->get_swizzle_array();
-    auto                                        usage                     = m_create_info_ptr->get_usage        ();
+    const auto&                                 swizzle_array                = m_create_info_ptr->get_swizzle_array();
+    auto                                        usage                        = m_create_info_ptr->get_usage        ();
 
     parent_image_n_mipmaps = parent_image_ptr->get_n_mipmaps();
 
@@ -250,6 +253,19 @@ bool Anvil::ImageView::init()
         usage_create_info.usage = usage.get_vk();
 
         struct_chainer.append_struct(usage_create_info);
+    }
+
+    if (sampler_ycbcr_conversion_ptr != nullptr)
+    {
+        VkSamplerYcbcrConversionInfoKHR conversion_info;
+
+        anvil_assert(m_device_ptr->get_extension_info()->khr_sampler_ycbcr_conversion() );
+        
+        conversion_info.conversion = sampler_ycbcr_conversion_ptr->get_sampler_ycbcr_conversion_vk();
+        conversion_info.pNext      = nullptr;
+        conversion_info.sType      = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO_KHR;
+
+        struct_chainer.append_struct(conversion_info);
     }
 
     {

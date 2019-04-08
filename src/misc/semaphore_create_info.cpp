@@ -20,6 +20,7 @@
 // THE SOFTWARE.
 //
 #include "misc/semaphore_create_info.h"
+#include "wrappers/device.h"
 
 Anvil::SemaphoreCreateInfoUniquePtr Anvil::SemaphoreCreateInfo::create(const Anvil::BaseDevice* in_device_ptr)
 {

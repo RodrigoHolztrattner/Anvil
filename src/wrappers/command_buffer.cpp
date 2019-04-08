@@ -62,12 +62,26 @@ Anvil::CommandBufferBase::BeginQueryCommand::BeginQueryCommand(Anvil::QueryPool*
 }
 
 /** Please see header for specification */
+Anvil::BeginQueryIndexedEXTCommand::BeginQueryIndexedEXTCommand(Anvil::QueryPool*               in_query_pool_ptr,
+                                                                const uint32_t&                 in_query,
+                                                                const Anvil::QueryControlFlags& in_flags,
+                                                                const uint32_t&                 in_index)
+    :Command       (COMMAND_TYPE_BEGIN_QUERY_INDEXED_EXT),
+     flags         (in_flags),
+     index         (in_index),
+     query         (in_query),
+     query_pool_ptr(in_query_pool_ptr)
+{
+    /* Stub */
+}
+
+/** Please see header for specification */
 Anvil::BeginRenderPassCommand::BeginRenderPassCommand(uint32_t                                in_n_clear_values,
                                                       const VkClearValue*                     in_clear_value_ptrs,
                                                       Anvil::Framebuffer*                     in_fbo_ptr,
-                                                      uint32_t                                in_n_physical_devices,
-                                                      const Anvil::PhysicalDevice* const*     in_physical_devices,
-                                                      const VkRect2D*                         in_render_areas,
+                                                      uint32_t                                in_device_mask,
+                                                      uint32_t                                in_n_render_areas,
+                                                      const VkRect2D*                         in_render_areas_ptr,
                                                       Anvil::RenderPass*                      in_render_pass_ptr,
                                                       Anvil::SubpassContents                  in_contents,
                                                       const uint32_t&                         in_n_attachment_initial_sample_locations,
@@ -77,6 +91,7 @@ Anvil::BeginRenderPassCommand::BeginRenderPassCommand(uint32_t                  
     :Command(COMMAND_TYPE_BEGIN_RENDER_PASS)
 {
     contents        = in_contents;
+    device_mask     = in_device_mask;
     fbo_ptr         = in_fbo_ptr;
     render_pass_ptr = in_render_pass_ptr;
 
@@ -87,16 +102,16 @@ Anvil::BeginRenderPassCommand::BeginRenderPassCommand(uint32_t                  
         clear_values.push_back(in_clear_value_ptrs[n_clear_value]);
     }
 
-    for (uint32_t n_physical_device = 0;
-                  n_physical_device < in_n_physical_devices;
-                ++n_physical_device)
-    {
-        physical_devices.push_back(in_physical_devices[n_physical_device]);
-        render_areas.push_back    (in_render_areas    [n_physical_device]);
-    }
-
     attachment_initial_sample_locations.resize(in_n_attachment_initial_sample_locations);
     post_subpass_sample_locations.resize      (in_n_post_subpass_sample_locations);
+    render_areas.resize                       (in_n_render_areas);
+
+    for (uint32_t n_render_area = 0;
+                  n_render_area < in_n_render_areas;
+                ++n_render_area)
+    {
+        render_areas.at(n_render_area) = in_render_areas_ptr[n_render_area];
+    }
 
     for (uint32_t n_attachment = 0;
                   n_attachment < in_n_attachment_initial_sample_locations;
@@ -111,6 +126,18 @@ Anvil::BeginRenderPassCommand::BeginRenderPassCommand(uint32_t                  
     {
         post_subpass_sample_locations.at(n_subpass) = in_post_subpass_sample_locations_ptr[n_subpass];
     }
+}
+
+/** Please see header for specification */
+Anvil::BeginTransformFeedbackEXTCommand::BeginTransformFeedbackEXTCommand(const uint32_t&                          in_first_counter_buffer,
+                                                                          const std::vector<const Anvil::Buffer*>& in_counter_buffer_ptrs,
+                                                                          const std::vector<VkDeviceSize>&         in_counter_buffer_offsets)
+    :Command               (COMMAND_TYPE_BEGIN_TRANSFORM_FEEDBACK_EXT),
+     counter_buffer_ptrs   (in_counter_buffer_ptrs),
+     counter_buffer_offsets(in_counter_buffer_offsets),
+     first_counter_buffer  (in_first_counter_buffer)
+{
+    /* Stub */
 }
 
 /** Please see header for specification */
@@ -222,6 +249,22 @@ Anvil::CommandBufferBase::BlitImageCommand::BlitImageCommand(Anvil::Image*      
     {
         regions.push_back(in_region_ptrs[n_region]);
     }
+}
+
+/** Please see header for specification */
+Anvil::BindTransformFeedbackBuffersEXTCommand::BindTransformFeedbackBuffersEXTCommand(const uint32_t&                    in_first_binding,
+                                                                                      const uint32_t&                    in_n_bindings,
+                                                                                      const std::vector<Anvil::Buffer*>& in_buffer_ptrs,
+                                                                                      const std::vector<VkDeviceSize>&   in_offsets,
+                                                                                      const std::vector<VkDeviceSize>&   in_sizes)
+    :Command      (COMMAND_TYPE_BIND_TRANSFORM_FEEDBACK_BUFFERS_EXT),
+     buffer_ptrs  (in_buffer_ptrs),
+     first_binding(in_first_binding),
+     n_bindings   (in_n_bindings),
+     offsets      (in_offsets),
+     sizes        (in_sizes)
+{
+    /* Stub */
 }
 
 /** Please see header for specification */
@@ -528,6 +571,23 @@ Anvil::CommandBufferBase::DrawIndexedIndirectCommand::DrawIndexedIndirectCommand
 }
 
 /** Please see header for specification */
+Anvil::CommandBufferBase::DrawIndirectByteCountEXTCommand::DrawIndirectByteCountEXTCommand(const uint32_t&     in_instance_count,
+                                                                                           const uint32_t&     in_first_instance,
+                                                                                           Anvil::Buffer*      in_counter_buffer_ptr,
+                                                                                           const VkDeviceSize& in_counter_buffer_offset,
+                                                                                           const uint32_t&     in_counter_offset,
+                                                                                           const uint32_t&     in_vertex_stride)
+    :Command(COMMAND_TYPE_DRAW_INDIRECT_BYTE_COUNT_EXT)
+{
+    counter_buffer_offset = in_counter_buffer_offset;
+    counter_buffer_ptr    = in_counter_buffer_ptr;
+    counter_offset        = in_counter_offset;
+    first_instance        = in_first_instance;
+    instance_count        = in_instance_count;
+    vertex_stride         = in_vertex_stride;
+}
+
+/** Please see header for specification */
 Anvil::CommandBufferBase::DrawIndexedIndirectCountAMDCommand::DrawIndexedIndirectCountAMDCommand(Anvil::Buffer* in_buffer_ptr,
                                                                                                  VkDeviceSize   in_offset,
                                                                                                  Anvil::Buffer* in_count_buffer_ptr,
@@ -627,9 +687,33 @@ Anvil::CommandBufferBase::EndQueryCommand::EndQueryCommand(Anvil::QueryPool* in_
 }
 
 /** Please see header for specification */
+Anvil::CommandBufferBase::EndQueryIndexedEXTCommand::EndQueryIndexedEXTCommand(Anvil::QueryPool*        in_query_pool_ptr,
+                                                                               const Anvil::QueryIndex& in_query,
+                                                                               const uint32_t&          in_index)
+    :Command       (COMMAND_TYPE_END_QUERY_INDEXED_EXT),
+     index         (in_index),
+     query         (in_query),
+     query_pool_ptr(in_query_pool_ptr)
+{
+    /* Stub */
+}
+
+/** Please see header for specification */
 Anvil::EndRenderPassCommand::EndRenderPassCommand()
     :Command(COMMAND_TYPE_END_RENDER_PASS)
 {
+}
+
+/** Please see header for specification */
+Anvil::CommandBufferBase::EndTransformFeedbackEXTCommand::EndTransformFeedbackEXTCommand(const uint32_t&                          in_first_counter_buffer,
+                                                                                         const std::vector<const Anvil::Buffer*>& in_counter_buffer_ptrs,
+                                                                                         const std::vector<VkDeviceSize>&         in_counter_buffer_offsets)
+    :Command               (COMMAND_TYPE_END_TRANSFORM_FEEDBACK_EXT),
+     first_counter_buffer  (in_first_counter_buffer),
+     counter_buffer_ptrs   (in_counter_buffer_ptrs),
+     counter_buffer_offsets(in_counter_buffer_offsets)
+{
+    /* Stub */
 }
 
 /** Please see header for specification */
@@ -979,18 +1063,19 @@ Anvil::CommandBufferBase::CommandBufferBase(const Anvil::BaseDevice* in_device_p
                                             Anvil::CommandPool*      in_parent_command_pool_ptr,
                                             Anvil::CommandBufferType in_type,
                                             bool                     in_mt_safe)
-    :MTSafetySupportProvider   (in_mt_safe),
-     DebugMarkerSupportProvider(in_device_ptr,
-                                VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT),
-     CallbacksSupportProvider  (COMMAND_BUFFER_CALLBACK_ID_COUNT),
-     m_command_buffer          (VK_NULL_HANDLE),
-     m_device_mask             (0),
-     m_device_ptr              (in_device_ptr),
-     m_is_renderpass_active    (false),
-     m_parent_command_pool_ptr (in_parent_command_pool_ptr),
-     m_recording_in_progress   (false),
-     m_renderpass_device_mask  (0),
-     m_type                    (in_type)
+    :MTSafetySupportProvider        (in_mt_safe),
+     DebugMarkerSupportProvider     (in_device_ptr,
+                                     Anvil::ObjectType::COMMAND_BUFFER),
+     CallbacksSupportProvider       (COMMAND_BUFFER_CALLBACK_ID_COUNT),
+     m_command_buffer               (VK_NULL_HANDLE),
+     m_device_mask                  (0),
+     m_device_ptr                   (in_device_ptr),
+     m_is_renderpass_active         (false),
+     m_n_debug_label_regions_started(0),
+     m_parent_command_pool_ptr      (in_parent_command_pool_ptr),
+     m_recording_in_progress        (false),
+     m_renderpass_device_mask       (0),
+     m_type                         (in_type)
 {
     anvil_assert(in_parent_command_pool_ptr != nullptr);
 }
@@ -1030,6 +1115,36 @@ Anvil::CommandBufferBase::~CommandBufferBase()
     #endif
 }
 
+/** Please see header for specification */
+void Anvil::CommandBufferBase::begin_debug_utils_label(const char*  in_label_name_ptr,
+                                                       const float* in_color_vec4_ptr)
+{
+    if (!m_device_ptr->get_parent_instance()->get_enabled_extensions_info()->ext_debug_utils() )
+    {
+        goto end;
+    }
+
+    {
+        const auto&          entrypoints = m_device_ptr->get_parent_instance()->get_extension_ext_debug_utils_entrypoints();
+        VkDebugUtilsLabelEXT label_info;
+
+        label_info.color[0]   = in_color_vec4_ptr[0];
+        label_info.color[1]   = in_color_vec4_ptr[1];
+        label_info.color[2]   = in_color_vec4_ptr[2];
+        label_info.color[3]   = in_color_vec4_ptr[3];
+        label_info.pLabelName = in_label_name_ptr;
+        label_info.pNext      = nullptr;
+        label_info.sType      = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+
+        entrypoints.vkCmdBeginDebugUtilsLabelEXT(m_command_buffer,
+                                                 &label_info);
+    }
+
+    ++m_n_debug_label_regions_started;
+end:
+    ;
+}
+
 #ifdef STORE_COMMAND_BUFFER_COMMANDS
     /** Clears the command vector by releasing all command descriptors back to the heap memory. */
     void Anvil::CommandBufferBase::clear_commands()
@@ -1037,6 +1152,61 @@ Anvil::CommandBufferBase::~CommandBufferBase()
         m_commands.clear();
     }
 #endif
+
+/* Please see header for specification */
+void Anvil::CommandBufferBase::end_debug_utils_label()
+{
+    if (!m_device_ptr->get_parent_instance()->get_enabled_extensions_info()->ext_debug_utils() )
+    {
+        goto end;
+    }
+
+    if (m_n_debug_label_regions_started == 0)
+    {
+        anvil_assert(m_n_debug_label_regions_started != 0);
+
+        goto end;
+    }
+
+    {
+        const auto& entrypoints = m_device_ptr->get_parent_instance()->get_extension_ext_debug_utils_entrypoints();
+
+        entrypoints.vkCmdEndDebugUtilsLabelEXT(m_command_buffer);
+    }
+
+    --m_n_debug_label_regions_started;
+end:
+    ;
+}
+
+/** Please see header for specification */
+void Anvil::CommandBufferBase::insert_debug_utils_label(const char*  in_label_name_ptr,
+                                                        const float* in_color_vec4_ptr)
+{
+    if (!m_device_ptr->get_parent_instance()->get_enabled_extensions_info()->ext_debug_utils() )
+    {
+        goto end;
+    }
+
+    {
+        const auto&          entrypoints = m_device_ptr->get_parent_instance()->get_extension_ext_debug_utils_entrypoints();
+        VkDebugUtilsLabelEXT label_info;
+
+        label_info.color[0]   = in_color_vec4_ptr[0];
+        label_info.color[1]   = in_color_vec4_ptr[1];
+        label_info.color[2]   = in_color_vec4_ptr[2];
+        label_info.color[3]   = in_color_vec4_ptr[3];
+        label_info.pLabelName = in_label_name_ptr;
+        label_info.pNext      = nullptr;
+        label_info.sType      = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+
+        entrypoints.vkCmdInsertDebugUtilsLabelEXT(m_command_buffer,
+                                                 &label_info);
+    }
+
+end:
+    ;
+}
 
 /* Please see header for specification */
 bool Anvil::CommandBufferBase::record_begin_query(Anvil::QueryPool*        in_query_pool_ptr,
@@ -1071,6 +1241,132 @@ bool Anvil::CommandBufferBase::record_begin_query(Anvil::QueryPool*        in_qu
                                        in_query_pool_ptr->get_query_pool(),
                                        in_entry,
                                        in_flags.get_vk() );
+    }
+    unlock();
+    m_parent_command_pool_ptr->unlock();
+
+    result = true;
+end:
+    return result;
+}
+
+/* Please see header for specification */
+bool Anvil::CommandBufferBase::record_begin_query_indexed(Anvil::QueryPool*               in_query_pool_ptr,
+                                                          const Anvil::QueryIndex&        in_query,
+                                                          const Anvil::QueryControlFlags& in_flags,
+                                                          const uint32_t&                 in_index)
+{
+    /* NOTE: The command can be executed both inside and outside a renderpass */
+    const auto& entrypoints = m_device_ptr->get_extension_ext_transform_feedback_entrypoints();
+    bool        result      = false;
+
+    if (!m_recording_in_progress)
+    {
+        anvil_assert(m_recording_in_progress);
+
+        goto end;
+    }
+
+    #ifdef STORE_COMMAND_BUFFER_COMMANDS
+    {
+        if (!m_command_stashing_disabled)
+        {
+            m_commands.push_back(BeginQueryIndexedEXTCommand(in_query_pool_ptr,
+                                                             in_query,
+                                                             in_flags,
+                                                             in_index) );
+        }
+    }
+    #endif
+
+    m_parent_command_pool_ptr->lock();
+    lock();
+    {
+        entrypoints.vkCmdBeginQueryIndexedEXT(m_command_buffer,
+                                              in_query_pool_ptr->get_query_pool(),
+                                              in_query,
+                                              in_flags.get_vk(),
+                                              in_index);
+    }
+    unlock();
+    m_parent_command_pool_ptr->unlock();
+
+    result = true;
+end:
+    return result;
+}
+
+/* Please see header for specification */
+bool Anvil::CommandBufferBase::record_begin_transform_feedback_EXT(const uint32_t&     in_first_counter_buffer,
+                                                                   const uint32_t&     in_n_counter_buffers,
+                                                                   Anvil::Buffer**     in_opt_counter_buffer_ptrs,
+                                                                   const VkDeviceSize* in_opt_counter_buffer_offsets)
+{
+    auto        counter_buffer_ptrs = std::vector<VkBuffer>(in_n_counter_buffers);
+    const auto& entrypoints         = m_device_ptr->get_extension_ext_transform_feedback_entrypoints();
+    bool        result              = false;
+
+    if (!m_is_renderpass_active)
+    {
+        anvil_assert(m_is_renderpass_active);
+
+        goto end;
+    }
+
+    if (!m_recording_in_progress)
+    {
+        anvil_assert(m_recording_in_progress);
+
+        goto end;
+    }
+
+    for (uint32_t n_counter_buffer = 0;
+                  n_counter_buffer < in_n_counter_buffers;
+                ++n_counter_buffer)
+    {
+        counter_buffer_ptrs.at(n_counter_buffer) = (in_opt_counter_buffer_ptrs != nullptr && in_opt_counter_buffer_ptrs[n_counter_buffer] != nullptr) ? in_opt_counter_buffer_ptrs[n_counter_buffer]->get_buffer()
+                                                                                                                                                      : VK_NULL_HANDLE;
+    }
+
+    #ifdef STORE_COMMAND_BUFFER_COMMANDS
+    {
+        if (!m_command_stashing_disabled)
+        {
+            std::vector<const Anvil::Buffer*> buffer_ptr_vec(in_n_counter_buffers,
+                                                             nullptr);
+            std::vector<VkDeviceSize>         offset_vec    (in_n_counter_buffers);
+
+            for (uint32_t n_counter_buffer = 0;
+                          n_counter_buffer < in_n_counter_buffers;
+                        ++n_counter_buffer)
+            {
+                if (in_opt_counter_buffer_ptrs                   != nullptr &&
+                    in_opt_counter_buffer_ptrs[n_counter_buffer] != nullptr)
+                {
+                    buffer_ptr_vec.at(n_counter_buffer) = in_opt_counter_buffer_ptrs[n_counter_buffer];
+                }
+
+                if (in_opt_counter_buffer_offsets != nullptr)
+                {
+                    offset_vec.at(n_counter_buffer) = in_opt_counter_buffer_offsets[n_counter_buffer];
+                }
+            }
+
+            m_commands.push_back(BeginTransformFeedbackEXTCommand(in_first_counter_buffer,
+                                                                  buffer_ptr_vec,
+                                                                  offset_vec) );
+        }
+    }
+    #endif
+
+    m_parent_command_pool_ptr->lock();
+    lock();
+    {
+        entrypoints.vkCmdBeginTransformFeedbackEXT(m_command_buffer,
+                                                   in_first_counter_buffer,
+                                                   in_n_counter_buffers,
+                                                   (counter_buffer_ptrs.size() > 0) ? &counter_buffer_ptrs.at(0) : nullptr,
+                                                   in_opt_counter_buffer_offsets);
     }
     unlock();
     m_parent_command_pool_ptr->unlock();
@@ -1199,7 +1495,7 @@ bool Anvil::CommandBufferBase::record_bind_pipeline(Anvil::PipelineBindPoint in_
         goto end;
     }
 
-    anvil_assert(in_pipeline_bind_point == Anvil::PipelineBindPoint::COMPUTE   ||
+    anvil_assert(in_pipeline_bind_point == Anvil::PipelineBindPoint::COMPUTE  ||
                  in_pipeline_bind_point == Anvil::PipelineBindPoint::GRAPHICS);
 
     pipeline_vk = (in_pipeline_bind_point == Anvil::PipelineBindPoint::COMPUTE) ? m_device_ptr->get_compute_pipeline_manager ()->get_pipeline(in_pipeline_id)
@@ -1221,6 +1517,76 @@ bool Anvil::CommandBufferBase::record_bind_pipeline(Anvil::PipelineBindPoint in_
         Anvil::Vulkan::vkCmdBindPipeline(m_command_buffer,
                                          static_cast<VkPipelineBindPoint>(in_pipeline_bind_point),
                                          pipeline_vk);
+    }
+    unlock();
+    m_parent_command_pool_ptr->unlock();
+
+    result = true;
+end:
+    return result;
+}
+
+/* Please see header for specification */
+bool Anvil::CommandBufferBase::record_bind_transform_feedback_buffers_EXT(const uint32_t&     in_first_binding,
+                                                                          const uint32_t&     in_n_bindings,
+                                                                          Anvil::Buffer**     in_buffer_ptrs,
+                                                                          const VkDeviceSize* in_offsets_ptr,
+                                                                          const VkDeviceSize* in_sizes_ptr)
+{
+    /* Note: Command supported inside and outside the renderpass. */
+    auto        buffers     = std::vector<VkBuffer>(in_n_bindings);
+    const auto& entrypoints = m_device_ptr->get_extension_ext_transform_feedback_entrypoints ();
+    bool        result      = false;
+
+    if (!m_recording_in_progress)
+    {
+        anvil_assert(m_recording_in_progress);
+
+        goto end;
+    }
+
+    #ifdef STORE_COMMAND_BUFFER_COMMANDS
+    {
+        if (!m_command_stashing_disabled)
+        {
+            std::vector<Anvil::Buffer*> buffer_vec(in_n_bindings);
+            std::vector<VkDeviceSize>   offset_vec(in_n_bindings);
+            std::vector<VkDeviceSize>   size_vec  (in_n_bindings);
+
+            for (uint32_t n_binding = 0;
+                          n_binding < in_n_bindings;
+                        ++n_binding)
+            {
+                buffer_vec.at(n_binding) = in_buffer_ptrs[n_binding];
+                offset_vec.at(n_binding) = in_offsets_ptr[n_binding];
+                size_vec.at  (n_binding) = in_sizes_ptr  [n_binding];
+            }
+
+            m_commands.push_back(BindTransformFeedbackBuffersEXTCommand(in_first_binding,
+                                                                        in_n_bindings,
+                                                                        buffer_vec,
+                                                                        offset_vec,
+                                                                        size_vec) );
+        }
+    }
+    #endif
+
+    for (uint32_t n_binding = 0;
+                  n_binding < in_n_bindings;
+                ++n_binding)
+    {
+        buffers.at(n_binding) = in_buffer_ptrs[n_binding]->get_buffer();
+    }
+
+    m_parent_command_pool_ptr->lock();
+    lock();
+    {
+        entrypoints.vkCmdBindTransformFeedbackBuffersEXT(m_command_buffer,
+                                                         in_first_binding,
+                                                         in_n_bindings,
+                                                         (in_n_bindings > 0) ? &buffers.at(0) : nullptr,
+                                                         in_offsets_ptr,
+                                                         in_sizes_ptr);
     }
     unlock();
     m_parent_command_pool_ptr->unlock();
@@ -2240,6 +2606,64 @@ end:
 }
 
 /* Please see header for specification */
+bool Anvil::CommandBufferBase::record_draw_indirect_byte_count_EXT(const uint32_t&     in_instance_count,
+                                                                   const uint32_t&     in_first_instance,
+                                                                   Anvil::Buffer*      in_counter_buffer_ptr,
+                                                                   const VkDeviceSize& in_counter_buffer_offset,
+                                                                   const uint32_t&     in_counter_offset,
+                                                                   const uint32_t&     in_vertex_stride)
+{
+    const auto& entrypoints = m_device_ptr->get_extension_ext_transform_feedback_entrypoints();
+    bool        result      = false;
+
+    if (!m_is_renderpass_active)
+    {
+        anvil_assert(m_is_renderpass_active);
+
+        goto end;
+    }
+
+    if (!m_recording_in_progress)
+    {
+        anvil_assert(m_recording_in_progress);
+
+        goto end;
+    }
+
+    #ifdef STORE_COMMAND_BUFFER_COMMANDS
+    {
+        if (!m_command_stashing_disabled)
+        {
+            m_commands.push_back(DrawIndirectByteCountEXTCommand(in_instance_count,
+                                                                 in_first_instance,
+                                                                 in_counter_buffer_ptr,
+                                                                 in_counter_buffer_offset,
+                                                                 in_counter_offset,
+                                                                 in_vertex_stride) );
+        }
+    }
+    #endif
+
+    m_parent_command_pool_ptr->lock();
+    lock();
+    {
+        entrypoints.vkCmdDrawIndirectByteCountEXT(m_command_buffer,
+                                                  in_instance_count,
+                                                  in_first_instance,
+                                                  in_counter_buffer_ptr->get_buffer(),
+                                                  in_counter_buffer_offset,
+                                                  in_counter_offset,
+                                                  in_vertex_stride);
+    }
+    unlock();
+    m_parent_command_pool_ptr->unlock();
+
+    result = true;
+end:
+    return result;
+}
+
+/* Please see header for specification */
 bool Anvil::CommandBufferBase::record_draw_indexed_indirect_count_AMD(Anvil::Buffer* in_buffer_ptr,
                                                                       VkDeviceSize   in_offset,
                                                                       Anvil::Buffer* in_count_buffer_ptr,
@@ -2582,6 +3006,128 @@ end:
 }
 
 /* Please see header for specification */
+bool Anvil::CommandBufferBase::record_end_query_indexed_EXT(Anvil::QueryPool*        in_query_pool_ptr,
+                                                            const Anvil::QueryIndex& in_query,
+                                                            const uint32_t&          in_index)
+{
+    /* NOTE: The command can be executed both inside and outside a renderpass */
+    const auto& entrypoints = m_device_ptr->get_extension_ext_transform_feedback_entrypoints();
+    bool        result      = false;
+
+    if (!m_recording_in_progress)
+    {
+        anvil_assert(m_recording_in_progress);
+
+        goto end;
+    }
+
+    #ifdef STORE_COMMAND_BUFFER_COMMANDS
+    {
+        if (!m_command_stashing_disabled)
+        {
+            m_commands.push_back(EndQueryIndexedEXTCommand(in_query_pool_ptr,
+                                                           in_query,
+                                                           in_index) );
+        }
+    }
+    #endif
+
+    m_parent_command_pool_ptr->lock();
+    lock();
+    {
+        entrypoints.vkCmdEndQueryIndexedEXT(m_command_buffer,
+                                            in_query_pool_ptr->get_query_pool(),
+                                            in_query,
+                                            in_index);
+    }
+    unlock();
+    m_parent_command_pool_ptr->unlock();
+
+    result = true;
+end:
+    return result;
+}
+
+/* Please see header for specification */
+bool Anvil::CommandBufferBase::record_end_transform_feedback_EXT(const uint32_t&     in_first_counter_buffer,
+                                                                 const uint32_t&     in_n_counter_buffers,
+                                                                 Anvil::Buffer**     in_opt_counter_buffer_ptrs,
+                                                                 const VkDeviceSize* in_opt_counter_buffer_offsets)
+{
+    auto        counter_buffer_ptrs = std::vector<VkBuffer>(in_n_counter_buffers);
+    const auto& entrypoints         = m_device_ptr->get_extension_ext_transform_feedback_entrypoints();
+    bool        result              = false;
+
+    if (!m_is_renderpass_active)
+    {
+        anvil_assert(m_is_renderpass_active);
+
+        goto end;
+    }
+
+    if (!m_recording_in_progress)
+    {
+        anvil_assert(m_recording_in_progress);
+
+        goto end;
+    }
+
+    for (uint32_t n_counter_buffer = 0;
+                  n_counter_buffer < in_n_counter_buffers;
+                ++n_counter_buffer)
+    {
+        counter_buffer_ptrs.at(n_counter_buffer) = (in_opt_counter_buffer_ptrs != nullptr && in_opt_counter_buffer_ptrs[n_counter_buffer] != nullptr) ? in_opt_counter_buffer_ptrs[n_counter_buffer]->get_buffer()
+                                                                                                                                                      : VK_NULL_HANDLE;
+    }
+
+    #ifdef STORE_COMMAND_BUFFER_COMMANDS
+    {
+        if (!m_command_stashing_disabled)
+        {
+            std::vector<const Anvil::Buffer*> buffer_ptr_vec(in_n_counter_buffers);
+            std::vector<VkDeviceSize>         offset_vec    (in_n_counter_buffers);
+
+            for (uint32_t n_counter_buffer = 0;
+                          n_counter_buffer < in_n_counter_buffers;
+                        ++n_counter_buffer)
+            {
+                if (in_opt_counter_buffer_ptrs                   != nullptr &&
+                    in_opt_counter_buffer_ptrs[n_counter_buffer] != nullptr)
+                {
+                    buffer_ptr_vec.at(n_counter_buffer) = in_opt_counter_buffer_ptrs[n_counter_buffer];
+                }
+
+                if (in_opt_counter_buffer_offsets != nullptr)
+                {
+                    offset_vec.at(n_counter_buffer) = in_opt_counter_buffer_offsets[n_counter_buffer];
+                }
+            }
+
+            m_commands.push_back(EndTransformFeedbackEXTCommand(in_first_counter_buffer,
+                                                                buffer_ptr_vec,
+                                                                offset_vec) );
+        }
+    }
+    #endif
+
+    m_parent_command_pool_ptr->lock();
+    lock();
+    {
+        entrypoints.vkCmdEndTransformFeedbackEXT(m_command_buffer,
+                                                 in_first_counter_buffer,
+                                                 in_n_counter_buffers,
+                                                 (in_n_counter_buffers > 0) ? &counter_buffer_ptrs.at(0) : nullptr,
+                                                 in_opt_counter_buffer_offsets);
+    }
+    unlock();
+    m_parent_command_pool_ptr->unlock();
+
+    result = true;
+end:
+    return result;
+}
+
+/* Please see header for specification */
 bool Anvil::CommandBufferBase::record_fill_buffer(Anvil::Buffer* in_dst_buffer_ptr,
                                                   VkDeviceSize   in_dst_offset,
                                                   VkDeviceSize   in_size,
@@ -2657,7 +3203,7 @@ bool Anvil::CommandBufferBase::record_pipeline_barrier(Anvil::PipelineStageFlags
     }
 
     anvil_assert((!m_is_renderpass_active)                                                                           ||
-                 ( m_is_renderpass_active) && (in_dependency_flags & Anvil::DependencyFlagBits::VIEW_LOCAL_BIT) == 0);
+                 ((m_is_renderpass_active) && (in_dependency_flags & Anvil::DependencyFlagBits::VIEW_LOCAL_BIT) == 0));
 
     #ifdef STORE_COMMAND_BUFFER_COMMANDS
     {
@@ -2935,7 +3481,6 @@ end:
     return result;
 }
 
-
 /* Please see header for specification */
 bool Anvil::CommandBufferBase::record_set_blend_constants(const float in_blend_constants[4])
 {
@@ -3068,7 +3613,7 @@ bool Anvil::CommandBufferBase::record_set_device_mask_KHR(uint32_t in_device_mas
     }
 
     anvil_assert(m_device_ptr->get_extension_info()->khr_device_group() );
-
+    anvil_assert(in_device_mask != 0);
 
     #ifdef STORE_COMMAND_BUFFER_COMMANDS
     {
@@ -3081,20 +3626,14 @@ bool Anvil::CommandBufferBase::record_set_device_mask_KHR(uint32_t in_device_mas
 
     if (m_is_renderpass_active)
     {
-        for (uint32_t n_device = 0;
-                      n_device < sizeof(uint32_t);
-                    ++n_device)
+        if ((m_renderpass_device_mask & in_device_mask) != in_device_mask)
         {
-            if (!(m_renderpass_device_mask & (1 << n_device)) &&
-                 (m_device_mask            & (1 << n_device)) )
-            {
-                /* It is illegal to try to activate a device which has not been enabled
-                 * for the renderpass.
-                 */
-                anvil_assert_fail();
+            /* It is illegal to try to activate a device which has not been enabled
+             * for the renderpass.
+             */
+            anvil_assert_fail();
 
-                goto end;
-            }
+            goto end;
         }
     }
 
@@ -3804,8 +4343,8 @@ bool Anvil::PrimaryCommandBuffer::record_begin_render_pass(uint32_t             
     return record_begin_render_pass(in_n_clear_values,
                                     in_clear_value_ptrs,
                                     in_fbo_ptr,
-                                    0,       /* in_n_physical_devices   */
-                                    nullptr, /* in_physical_devices_ptr */
+                                    0,       /* in_device_mask   */
+                                    1,       /* in_n_render_areas */
                                    &in_render_area,
                                     in_render_pass_ptr,
                                     in_contents,
@@ -3819,9 +4358,9 @@ bool Anvil::PrimaryCommandBuffer::record_begin_render_pass(uint32_t             
 bool Anvil::PrimaryCommandBuffer::record_begin_render_pass(uint32_t                                in_n_clear_values,
                                                            const VkClearValue*                     in_clear_value_ptrs,
                                                            Anvil::Framebuffer*                     in_fbo_ptr,
-                                                           uint32_t                                in_n_physical_devices,
-                                                           const Anvil::PhysicalDevice* const*     in_physical_devices,
-                                                           const VkRect2D*                         in_render_areas,
+                                                           uint32_t                                in_device_mask,
+                                                           uint32_t                                in_n_render_areas,
+                                                           const VkRect2D*                         in_render_areas_ptr,
                                                            Anvil::RenderPass*                      in_render_pass_ptr,
                                                            Anvil::SubpassContents                  in_contents,
                                                            const uint32_t&                         in_opt_n_attachment_initial_sample_locations,
@@ -3829,9 +4368,97 @@ bool Anvil::PrimaryCommandBuffer::record_begin_render_pass(uint32_t             
                                                            const uint32_t&                         in_opt_n_post_subpass_sample_locations,
                                                            const Anvil::SubpassSampleLocations*    in_opt_post_subpass_sample_locations_ptr)
 {
-    const Anvil::DeviceType                     device_type                         = m_device_ptr->get_type();
+    return record_begin_render_pass_internal(false, /* in_use_khr_create_rp2_extension */
+                                             in_n_clear_values,
+                                             in_clear_value_ptrs,
+                                             in_fbo_ptr,
+                                             in_device_mask,
+                                             in_n_render_areas,
+                                             in_render_areas_ptr,
+                                             in_render_pass_ptr,
+                                             in_contents,
+                                             in_opt_n_attachment_initial_sample_locations,
+                                             in_opt_attachment_initial_sample_locations_ptr,
+                                             in_opt_n_post_subpass_sample_locations,
+                                             in_opt_post_subpass_sample_locations_ptr);
+}
+
+/* Please see header for specification */
+bool Anvil::PrimaryCommandBuffer::record_begin_render_pass2_KHR(uint32_t                                in_n_clear_values,
+                                                                const VkClearValue*                     in_clear_value_ptrs,
+                                                                Anvil::Framebuffer*                     in_fbo_ptr,
+                                                                VkRect2D                                in_render_area,
+                                                                Anvil::RenderPass*                      in_render_pass_ptr,
+                                                                Anvil::SubpassContents                  in_contents,
+                                                                const uint32_t&                         in_opt_n_attachment_initial_sample_locations,
+                                                                const Anvil::AttachmentSampleLocations* in_opt_attachment_initial_sample_locations_ptr,
+                                                                const uint32_t&                         in_opt_n_post_subpass_sample_locations,
+                                                                const Anvil::SubpassSampleLocations*    in_opt_post_subpass_sample_locations_ptr)
+{
+    return record_begin_render_pass2_KHR(in_n_clear_values,
+                                         in_clear_value_ptrs,
+                                         in_fbo_ptr,
+                                         0,       /* in_device_mask   */
+                                         1,       /* in_n_render_areas */
+                                        &in_render_area,
+                                         in_render_pass_ptr,
+                                         in_contents,
+                                         in_opt_n_attachment_initial_sample_locations,
+                                         in_opt_attachment_initial_sample_locations_ptr,
+                                         in_opt_n_post_subpass_sample_locations,
+                                         in_opt_post_subpass_sample_locations_ptr);
+}
+
+/* Please see header for specification */
+bool Anvil::PrimaryCommandBuffer::record_begin_render_pass2_KHR(uint32_t                                in_n_clear_values,
+                                                                const VkClearValue*                     in_clear_value_ptrs,
+                                                                Anvil::Framebuffer*                     in_fbo_ptr,
+                                                                uint32_t                                in_device_mask,
+                                                                uint32_t                                in_n_render_areas,
+                                                                const VkRect2D*                         in_render_areas_ptr,
+                                                                Anvil::RenderPass*                      in_render_pass_ptr,
+                                                                Anvil::SubpassContents                  in_contents,
+                                                                const uint32_t&                         in_opt_n_attachment_initial_sample_locations,
+                                                                const Anvil::AttachmentSampleLocations* in_opt_attachment_initial_sample_locations_ptr,
+                                                                const uint32_t&                         in_opt_n_post_subpass_sample_locations,
+                                                                const Anvil::SubpassSampleLocations*    in_opt_post_subpass_sample_locations_ptr)
+{
+    anvil_assert(m_device_ptr->get_extension_info()->khr_create_renderpass2() );
+
+    return record_begin_render_pass_internal(true, /* in_use_khr_create_rp2_extension */
+                                             in_n_clear_values,
+                                             in_clear_value_ptrs,
+                                             in_fbo_ptr,
+                                             in_device_mask,
+                                             in_n_render_areas,
+                                             in_render_areas_ptr,
+                                             in_render_pass_ptr,
+                                             in_contents,
+                                             in_opt_n_attachment_initial_sample_locations,
+                                             in_opt_attachment_initial_sample_locations_ptr,
+                                             in_opt_n_post_subpass_sample_locations,
+                                             in_opt_post_subpass_sample_locations_ptr);
+}
+
+/* Please see header for specification */
+bool Anvil::PrimaryCommandBuffer::record_begin_render_pass_internal(const bool&                             in_use_khr_create_rp2_extension,
+                                                                    uint32_t                                in_n_clear_values,
+                                                                    const VkClearValue*                     in_clear_value_ptrs,
+                                                                    Anvil::Framebuffer*                     in_fbo_ptr,
+                                                                    uint32_t                                in_device_mask,
+                                                                    uint32_t                                in_n_render_areas,
+                                                                    const VkRect2D*                         in_render_areas_ptr,
+                                                                    Anvil::RenderPass*                      in_render_pass_ptr,
+                                                                    Anvil::SubpassContents                  in_contents,
+                                                                    const uint32_t&                         in_opt_n_attachment_initial_sample_locations,
+                                                                    const Anvil::AttachmentSampleLocations* in_opt_attachment_initial_sample_locations_ptr,
+                                                                    const uint32_t&                         in_opt_n_post_subpass_sample_locations,
+                                                                    const Anvil::SubpassSampleLocations*    in_opt_post_subpass_sample_locations_ptr)
+{
+    const Anvil::DeviceType device_type = m_device_ptr->get_type();
+    bool                    result      = false;
+
     Anvil::StructChainer<VkRenderPassBeginInfo> render_pass_begin_info_chain;
-    bool                                        result = false;
 
     if (m_is_renderpass_active)
     {
@@ -3847,40 +4474,45 @@ bool Anvil::PrimaryCommandBuffer::record_begin_render_pass(uint32_t             
         goto end;
     }
 
-    if (in_n_physical_devices == 0                              &&
-        device_type           == Anvil::DeviceType::SINGLE_GPU)
-    {
-        const Anvil::PhysicalDevice* physical_device_ptr;
-        const Anvil::SGPUDevice*     sgpu_device_ptr(dynamic_cast<const Anvil::SGPUDevice*>(m_device_ptr) );
-
-        anvil_assert(sgpu_device_ptr != nullptr); /* User attempted to call this function prototype with in_n_physical_devices set to 0 */
-
-        physical_device_ptr   = sgpu_device_ptr->get_physical_device();
-        in_n_physical_devices = 1;
-        in_physical_devices   = &physical_device_ptr;
-    }
-
     #ifdef STORE_COMMAND_BUFFER_COMMANDS
     {
         if (!m_command_stashing_disabled)
         {
-            m_commands.push_back(BeginRenderPassCommand(in_n_clear_values,
-                                                        in_clear_value_ptrs,
-                                                        in_fbo_ptr,
-                                                        in_n_physical_devices,
-                                                        in_physical_devices,
-                                                        in_render_areas,
-                                                        in_render_pass_ptr,
-                                                        in_contents,
-                                                        in_opt_n_attachment_initial_sample_locations,
-                                                        in_opt_attachment_initial_sample_locations_ptr,
-                                                        in_opt_n_post_subpass_sample_locations,
-                                                        in_opt_post_subpass_sample_locations_ptr) );
+            if (in_use_khr_create_rp2_extension)
+            {
+                m_commands.push_back(BeginRenderPass2KHRCommand(in_n_clear_values,
+                                                                in_clear_value_ptrs,
+                                                                in_fbo_ptr,
+                                                                in_device_mask,
+                                                                in_n_render_areas,
+                                                                in_render_areas_ptr,
+                                                                in_render_pass_ptr,
+                                                                in_contents,
+                                                                in_opt_n_attachment_initial_sample_locations,
+                                                                in_opt_attachment_initial_sample_locations_ptr,
+                                                                in_opt_n_post_subpass_sample_locations,
+                                                                in_opt_post_subpass_sample_locations_ptr) );
+            }
+            else
+            {
+                m_commands.push_back(BeginRenderPassCommand(in_n_clear_values,
+                                                            in_clear_value_ptrs,
+                                                            in_fbo_ptr,
+                                                            in_device_mask,
+                                                            in_n_render_areas,
+                                                            in_render_areas_ptr,
+                                                            in_render_pass_ptr,
+                                                            in_contents,
+                                                            in_opt_n_attachment_initial_sample_locations,
+                                                            in_opt_attachment_initial_sample_locations_ptr,
+                                                            in_opt_n_post_subpass_sample_locations,
+                                                            in_opt_post_subpass_sample_locations_ptr) );
+            }
         }
     }
     #endif
 
-    anvil_assert(in_render_areas != nullptr);
+    anvil_assert(in_render_areas_ptr != nullptr);
 
     {
         VkRenderPassBeginInfo render_pass_begin_info;
@@ -3889,7 +4521,7 @@ bool Anvil::PrimaryCommandBuffer::record_begin_render_pass(uint32_t             
         render_pass_begin_info.framebuffer     = in_fbo_ptr->get_framebuffer(in_render_pass_ptr);
         render_pass_begin_info.pClearValues    = in_clear_value_ptrs;
         render_pass_begin_info.pNext           = nullptr;
-        render_pass_begin_info.renderArea      = in_render_areas[0];
+        render_pass_begin_info.renderArea      = in_render_areas_ptr[0];
         render_pass_begin_info.renderPass      = in_render_pass_ptr->get_render_pass();
         render_pass_begin_info.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 
@@ -3900,18 +4532,11 @@ bool Anvil::PrimaryCommandBuffer::record_begin_render_pass(uint32_t             
     {
         VkDeviceGroupRenderPassBeginInfoKHR render_pass_device_group_begin_info;
 
-        render_pass_device_group_begin_info.deviceMask            = 0;
-        render_pass_device_group_begin_info.deviceRenderAreaCount = in_n_physical_devices;
-        render_pass_device_group_begin_info.pDeviceRenderAreas    = in_render_areas;
+        render_pass_device_group_begin_info.deviceMask            = in_device_mask;
+        render_pass_device_group_begin_info.deviceRenderAreaCount = in_n_render_areas;
+        render_pass_device_group_begin_info.pDeviceRenderAreas    = in_render_areas_ptr;
         render_pass_device_group_begin_info.pNext                 = nullptr;
         render_pass_device_group_begin_info.sType                 = VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO_KHR;
-
-        for (uint32_t n_physical_device = 0;
-                      n_physical_device < in_n_physical_devices;
-                    ++n_physical_device)
-        {
-            render_pass_device_group_begin_info.deviceMask |= (1 << in_physical_devices[n_physical_device]->get_device_group_device_index() );
-        }
 
         render_pass_begin_info_chain.append_struct(render_pass_device_group_begin_info);
 
@@ -3958,9 +4583,25 @@ bool Anvil::PrimaryCommandBuffer::record_begin_render_pass(uint32_t             
     {
         auto chain_ptr = render_pass_begin_info_chain.create_chain();
 
-        Anvil::Vulkan::vkCmdBeginRenderPass(m_command_buffer,
-                                            chain_ptr->get_root_struct(),
-                                            static_cast<VkSubpassContents>(in_contents) );
+        if (!in_use_khr_create_rp2_extension)
+        {
+            Anvil::Vulkan::vkCmdBeginRenderPass(m_command_buffer,
+                                                chain_ptr->get_root_struct(),
+                                                static_cast<VkSubpassContents>(in_contents) );
+        }
+        else
+        {
+            const auto&           crp2_entrypoints   = m_device_ptr->get_extension_khr_create_renderpass2_entrypoints();
+            VkSubpassBeginInfoKHR subpass_begin_info;
+
+            subpass_begin_info.contents = static_cast<VkSubpassContents>(in_contents);
+            subpass_begin_info.pNext    = nullptr;
+            subpass_begin_info.sType    = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO_KHR;
+
+            crp2_entrypoints.vkCmdBeginRenderPass2KHR(m_command_buffer,
+                                                      chain_ptr->get_root_struct(),
+                                                     &subpass_begin_info);
+        }
     }
     unlock();
     m_parent_command_pool_ptr->unlock();
@@ -3973,6 +4614,20 @@ end:
 
 /* Please see header for specification */
 bool Anvil::PrimaryCommandBuffer::record_end_render_pass()
+{
+    return record_end_render_pass_internal(false); /* in_use_khr_create_rp2_extension */
+}
+
+/* Please see header for specification */
+bool Anvil::PrimaryCommandBuffer::record_end_render_pass2_KHR()
+{
+    anvil_assert(m_device_ptr->get_extension_info()->khr_create_renderpass2() );
+
+    return record_end_render_pass_internal(true); /* in_use_khr_create_rp2_extension */
+}
+
+/* Please see header for specification */
+bool Anvil::PrimaryCommandBuffer::record_end_render_pass_internal(const bool& in_use_khr_create_rp2_extension)
 {
     bool result = false;
 
@@ -3994,7 +4649,14 @@ bool Anvil::PrimaryCommandBuffer::record_end_render_pass()
     {
         if (!m_command_stashing_disabled)
         {
-            m_commands.push_back(EndRenderPassCommand() );
+            if (in_use_khr_create_rp2_extension)
+            {
+                m_commands.push_back(EndRenderPass2KHRCommand() );
+            }
+            else
+            {
+                m_commands.push_back(EndRenderPassCommand() );
+            }
         }
     }
     #endif
@@ -4002,7 +4664,21 @@ bool Anvil::PrimaryCommandBuffer::record_end_render_pass()
     m_parent_command_pool_ptr->lock();
     lock();
     {
-        Anvil::Vulkan::vkCmdEndRenderPass(m_command_buffer);
+        if (in_use_khr_create_rp2_extension)
+        {
+            const auto&         crp2_entrypoints = m_device_ptr->get_extension_khr_create_renderpass2_entrypoints();
+            VkSubpassEndInfoKHR subpass_end_info;
+
+            subpass_end_info.pNext = nullptr;
+            subpass_end_info.sType = VK_STRUCTURE_TYPE_SUBPASS_END_INFO_KHR;
+
+            crp2_entrypoints.vkCmdEndRenderPass2KHR(m_command_buffer,
+                                                   &subpass_end_info);
+        }
+        else
+        {
+            Anvil::Vulkan::vkCmdEndRenderPass(m_command_buffer);
+        }
     }
     unlock();
     m_parent_command_pool_ptr->unlock();
@@ -4063,6 +4739,23 @@ end:
 /* Please see header for specification */
 bool Anvil::PrimaryCommandBuffer::record_next_subpass(Anvil::SubpassContents in_contents)
 {
+    return record_next_subpass_internal(false, /* in_use_khr_create_rp2_extension */
+                                        in_contents);
+}
+
+/* Please see header for specification */
+bool Anvil::PrimaryCommandBuffer::record_next_subpass2_KHR(Anvil::SubpassContents in_contents)
+{
+    anvil_assert(m_device_ptr->get_extension_info()->khr_create_renderpass2() );
+
+    return record_next_subpass_internal(true, /* in_use_khr_create_rp2_extension */
+                                        in_contents);
+}
+
+/* Please see header for specification */
+bool Anvil::PrimaryCommandBuffer::record_next_subpass_internal(const bool&            in_use_khr_create_rp2_extension,
+                                                               Anvil::SubpassContents in_contents)
+{
     bool result = false;
 
     if (!m_is_renderpass_active)
@@ -4083,7 +4776,14 @@ bool Anvil::PrimaryCommandBuffer::record_next_subpass(Anvil::SubpassContents in_
     {
         if (!m_command_stashing_disabled)
         {
-            m_commands.push_back(NextSubpassCommand(in_contents) );
+            if (in_use_khr_create_rp2_extension)
+            {
+                m_commands.push_back(NextSubpass2KHRCommand(in_contents) );
+            }
+            else
+            {
+                m_commands.push_back(NextSubpassCommand(in_contents) );
+            }
         }
     }
     #endif
@@ -4091,8 +4791,28 @@ bool Anvil::PrimaryCommandBuffer::record_next_subpass(Anvil::SubpassContents in_
     m_parent_command_pool_ptr->lock();
     lock();
     {
-        Anvil::Vulkan::vkCmdNextSubpass(m_command_buffer,
-                                        static_cast<VkSubpassContents>(in_contents) );
+        if (in_use_khr_create_rp2_extension)
+        {
+            const auto&           crp2_entrypoints = m_device_ptr->get_extension_khr_create_renderpass2_entrypoints();
+            VkSubpassBeginInfoKHR subpass_begin_info;
+            VkSubpassEndInfoKHR   subpass_end_info;
+
+            subpass_begin_info.contents = static_cast<VkSubpassContents>(in_contents);
+            subpass_begin_info.pNext    = nullptr;
+            subpass_begin_info.sType    = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO_KHR;
+
+            subpass_end_info.pNext = nullptr;
+            subpass_end_info.sType = VK_STRUCTURE_TYPE_SUBPASS_END_INFO_KHR;
+
+            crp2_entrypoints.vkCmdNextSubpass2KHR(m_command_buffer,
+                                                 &subpass_begin_info,
+                                                 &subpass_end_info);
+        }
+        else
+        {
+            Anvil::Vulkan::vkCmdNextSubpass(m_command_buffer,
+                                            static_cast<VkSubpassContents>(in_contents) );
+        }
     }
     unlock();
     m_parent_command_pool_ptr->unlock();
