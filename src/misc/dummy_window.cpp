@@ -38,7 +38,8 @@
 Anvil::WindowUniquePtr Anvil::DummyWindow::create(const std::string&      in_title,
                                                   unsigned int            in_width,
                                                   unsigned int            in_height,
-                                                  PresentCallbackFunction in_present_callback_func)
+                                                  PresentCallbackFunction in_present_callback_func,
+                                                  InputCallbacks          in_input_callback_collection)
 {
     WindowUniquePtr result_ptr(nullptr,
                                std::default_delete<Anvil::Window>() );
@@ -47,7 +48,8 @@ Anvil::WindowUniquePtr Anvil::DummyWindow::create(const std::string&      in_tit
         new Anvil::DummyWindow(in_title,
                                in_width,
                                in_height,
-                               in_present_callback_func)
+                               in_present_callback_func, 
+                               in_input_callback_collection)
     );
 
     if (result_ptr)
@@ -65,12 +67,14 @@ Anvil::WindowUniquePtr Anvil::DummyWindow::create(const std::string&      in_tit
 Anvil::DummyWindow::DummyWindow(const std::string&      in_title,
                                 unsigned int            in_width,
                                 unsigned int            in_height,
-                                PresentCallbackFunction in_present_callback_func)
+                                PresentCallbackFunction in_present_callback_func,
+                                InputCallbacks          in_input_callback_collection)
     :Window(in_title,
             in_width,
             in_height,
             false, /* in_closable */
-            in_present_callback_func)
+            in_present_callback_func, 
+            in_input_callback_collection)
 {
     m_window_owned = true;
 }
@@ -121,7 +125,8 @@ void Anvil::DummyWindow::run()
 Anvil::WindowUniquePtr Anvil::DummyWindowWithPNGSnapshots::create(const std::string&      in_title,
                                                                   unsigned int            in_width,
                                                                   unsigned int            in_height,
-                                                                  PresentCallbackFunction in_present_callback_func)
+                                                                  PresentCallbackFunction in_present_callback_func,
+                                                                  InputCallbacks          in_input_callback_collection)
 {
     WindowUniquePtr result_ptr(nullptr,
                                std::default_delete<Anvil::Window>() );
@@ -130,7 +135,8 @@ Anvil::WindowUniquePtr Anvil::DummyWindowWithPNGSnapshots::create(const std::str
         new Anvil::DummyWindowWithPNGSnapshots(in_title,
                                                in_width,
                                                in_height,
-                                               in_present_callback_func)
+                                               in_present_callback_func, 
+                                               in_input_callback_collection)
     );
 
     if (result_ptr)
@@ -148,11 +154,13 @@ Anvil::WindowUniquePtr Anvil::DummyWindowWithPNGSnapshots::create(const std::str
 Anvil::DummyWindowWithPNGSnapshots::DummyWindowWithPNGSnapshots(const std::string&      in_title,
                                                                 unsigned int            in_width,
                                                                 unsigned int            in_height,
-                                                                PresentCallbackFunction in_present_callback_func)
+                                                                PresentCallbackFunction in_present_callback_func,
+                                                                InputCallbacks          in_input_callback_collection)
     :DummyWindow(in_title,
                  in_width,
                  in_height,
-                 in_present_callback_func)
+                 in_present_callback_func,
+                 in_input_callback_collection)
 {
     m_height             = in_height;
     m_n_frames_presented = 0;

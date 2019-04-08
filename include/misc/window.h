@@ -35,11 +35,37 @@
 
 namespace Anvil
 {
-	// Input callback
-	typedef std::function<void(WindowInput _input)> InputCallbackFunction;
+	/** Prototype of functions, witch receive input and/or window updates */
+    typedef std::function<void(InputMouseButton, InputAction, uint32_t)>   MouseButtonCallbackFunction;
+    typedef std::function<void(uint32_t, uint32_t)>                        CursorPosCallbackFunction;
+    typedef std::function<void(int, int)>                                  ScrollCallbackFunction;
+    typedef std::function<void(InputKey, uint32_t, InputAction, uint32_t)> KeyCallbackFunction;
+    typedef std::function<void(uint32_t)>                                  CharCallbackFunction;
+    typedef std::function<void(uint32_t, uint32_t)>                        WindowPosCallbackFunction;
+    typedef std::function<void(uint32_t, uint32_t)>                        WindowSizeCallbackFunction;
+    typedef std::function<void()>                                          WindowCloseCallbackFunction;
+    typedef std::function<void(bool)>                                      WindowFocusCallbackFunction;
+    typedef std::function<void(bool)>                                      WindowMinimizeCallbackFunction;
+    typedef std::function<void(std::vector<std::wstring>)>                 WindowDropCallbackFunction;
 
     /** Prototype of a function, which renders frame contents & presents it */
-    typedef std::function<void()> PresentCallbackFunction;;
+    typedef std::function<void()> PresentCallbackFunction;
+
+    /** A collection of input callbacks */
+    struct InputCallbacks
+    {
+        MouseButtonCallbackFunction    mouseButtonCallback;
+        CursorPosCallbackFunction      cursorPosCallback;
+        ScrollCallbackFunction         scrollCallback;
+        KeyCallbackFunction            keyCallback;
+        CharCallbackFunction           charCallback;
+        WindowPosCallbackFunction      windowPosCallback;
+        WindowSizeCallbackFunction     windowSizeCallback;
+        WindowCloseCallbackFunction    windowCloseCallback;
+        WindowFocusCallbackFunction    windowFocusCallback;
+        WindowMinimizeCallbackFunction windowMinimizeCallback;
+        WindowDropCallbackFunction     windowDropCallback;
+    };
 
     /* Enumerates available window call-back types.*/
     enum WindowCallbackID
@@ -126,7 +152,7 @@ namespace Anvil
                unsigned int            in_height,
                bool                    in_closable,
                PresentCallbackFunction in_present_callback_func, 
-			   InputCallbackFunction   in_input_callback_func = nullptr);
+               InputCallbacks          in_input_callback_collection);
 
         virtual ~Window();
 
@@ -158,23 +184,51 @@ namespace Anvil
         }
 
 		/* Returns window's cursor position */
-		virtual void get_cursor_position(uint32_t& x, uint32_t& y) const
-		{
-			x = 0;
-			y = 0;
-		}
+        virtual void get_cursor_position(uint32_t& x, uint32_t& y) const;
 
 		/* Set the window's cursor position */
-		virtual void set_cursor_position(uint32_t, uint32_t)
-		{
-
-		}
+        virtual void set_cursor_position(uint32_t, uint32_t);
 
 		/* Hide/show the window's cursor */
-		virtual void show_cursor(bool)
-		{
+        virtual void show_cursor(bool);
 
-		}
+        /* Returns if the window is currently focused */
+        virtual bool get_is_focused() const;
+
+        /* Force the window to be on focus */
+        virtual void set_focused();
+
+        /* Returns if the window if currently hovered */
+        virtual bool get_is_hovered() const;
+
+        /* Returns if the window is currently minimized */
+        virtual bool get_is_minimized() const;
+
+        /* Returns the window opacity */
+        virtual float get_opacity() const;
+
+        /* Set the window opacity */
+        virtual void set_opacity(float);
+
+        /* Hide/show this window on the taskbar (if supported) */
+        virtual void set_taskbar_visibility(bool visible);
+
+        /* Hide/show this window */
+        virtual void set_visibility(bool visible);
+
+        /* Returns the current width/height for this window */
+        virtual uint32_t get_current_width()  const;
+        virtual uint32_t get_current_height() const;
+
+        /* Returns the current position for this window */
+        virtual uint32_t get_current_x() const;
+        virtual uint32_t get_curretn_y() const;
+
+        /* Set the clipboard text (if supported) */
+        virtual void set_clipboard_text(std::string text);
+
+        /* Returns the clipboard text (if supported) */
+        virtual std::wstring get_clipboard_text() const;
 
         /** Makes the window responsive to user's action and starts updating window contents.
          *
@@ -206,7 +260,7 @@ namespace Anvil
     protected:
         /* protected variables */
         PresentCallbackFunction m_present_callback_func;
-		InputCallbackFunction   m_input_callback_func;
+        InputCallbacks          m_input_callback_collection;
 
         bool            m_closable;
         unsigned int    m_height;
@@ -218,6 +272,9 @@ namespace Anvil
         /* Window handle */
         WindowHandle    m_window;
         bool            m_window_owned;
+        bool            m_hovered = false;
+        bool            m_minimized = false;
+        bool            m_visible = true;
 
         /* protected functions */
 

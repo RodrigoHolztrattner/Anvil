@@ -56,7 +56,7 @@ namespace Anvil
                                              unsigned int                   in_height,
                                              bool                           in_closable,
                                              Anvil::PresentCallbackFunction in_present_callback_func,
-											 Anvil::InputCallbackFunction   in_input_callback_func,
+											 Anvil::InputCallbacks          in_input_callback_collection,
                                              bool                           in_visible);
 
         /* Creates a window wrapper instance from an existing window handle.
@@ -107,6 +107,44 @@ namespace Anvil
 		/* Hide/show the window's cursor */
 		void show_cursor(bool show) override;
 
+        /* Returns if the window is currently focused */
+        bool get_is_focused() const override;
+
+        /* Force the window to be on focus */
+        void set_focused() override;
+
+        /* Returns if the window if currently hovered */
+        bool get_is_hovered() const override;
+
+        /* Returns if the window is currently minimized */
+        bool get_is_minimized() const override;
+
+        /* Returns the window opacity */
+        float get_opacity() const override;
+
+        /* Set the window opacity */
+        void set_opacity(float opacity) override;
+
+        /* Hide/show this window on the taskbar (if supported) */
+        void set_taskbar_visibility(bool visible) override;
+
+        /* Hide/show this window */
+        void set_visibility(bool visible) override;
+
+        /* Returns the current width/height for this window */
+        uint32_t get_current_width()  const override;
+        uint32_t get_current_height() const override;
+
+        /* Returns the current position for this window */
+        uint32_t get_current_x() const override;
+        uint32_t get_curretn_y() const override;
+
+        /* Set the clipboard text (if supported) */
+        void set_clipboard_text(std::string text) override;
+
+        /* Returns the clipboard text (if supported) */
+        std::wstring get_clipboard_text() const override;
+
     private:
         /* Private functions */
 
@@ -115,13 +153,13 @@ namespace Anvil
                       unsigned int                   in_height,
                       bool                           in_closable,
                       Anvil::PresentCallbackFunction in_present_callback_func, 
-					  Anvil::InputCallbackFunction   in_input_callback_func);
+					  Anvil::InputCallbacks          in_input_callback_collection);
         WindowWin3264(HWND                           in_handle,
                       const std::string&             in_title,
                       unsigned int                   in_width,
                       unsigned int                   in_height,
                       PresentCallbackFunction        in_present_callback_func, 
-					  Anvil::InputCallbackFunction   in_input_callback_func);
+					  Anvil::InputCallbacks          in_input_callback_collection);
 
         /** Creates a new system window and prepares it for usage. */
         bool init(const bool& in_visible);
@@ -131,11 +169,13 @@ namespace Anvil
                                                       WPARAM in_param_wide,
                                                       LPARAM in_param_long);
 
-		void process_message(UINT   in_message_id,
-			WPARAM in_param_wide,
-			LPARAM in_param_long);
+        void process_message(HWND in_window_handle,
+                             UINT   in_message_id,
+                             WPARAM in_param_wide,
+                             LPARAM in_param_long);
 
 		HCURSOR m_WindowCursor;
+        std::array<bool, static_cast<int>(InputKey::MAX_COUNT)> m_KeyStatus;
 
         /* Private variables */
     };

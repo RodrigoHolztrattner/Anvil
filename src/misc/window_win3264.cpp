@@ -32,13 +32,13 @@ Anvil::WindowWin3264::WindowWin3264(const std::string&             in_title,
                                     unsigned int                   in_height,
                                     bool                           in_closable,
                                     Anvil::PresentCallbackFunction in_present_callback_func, 
-									Anvil::InputCallbackFunction   in_input_callback_func)
+									Anvil::InputCallbacks          in_input_callback_collection)
     :Window(in_title,
             in_width,
             in_height,
             in_closable,
             in_present_callback_func, 
-			in_input_callback_func)
+			in_input_callback_collection)
 {
     m_window_owned = true;
 }
@@ -49,13 +49,13 @@ Anvil::WindowWin3264::WindowWin3264(HWND                           in_handle,
                                     unsigned int                   in_width,
                                     unsigned int                   in_height,
                                     Anvil::PresentCallbackFunction in_present_callback_func,
-									Anvil::InputCallbackFunction   in_input_callback_func)
+									Anvil::InputCallbacks          in_input_callback_collection)
     :Window(in_title,
             in_width,
             in_height,
             true, /* in_closable */
             in_present_callback_func, 
-			in_input_callback_func)
+            in_input_callback_collection)
 {
     m_window       = in_handle;
     m_window_owned = false;
@@ -67,7 +67,7 @@ Anvil::WindowUniquePtr Anvil::WindowWin3264::create(const std::string&          
                                                     unsigned int                   in_height,
                                                     bool                           in_closable,
                                                     Anvil::PresentCallbackFunction in_present_callback_func,
-													Anvil::InputCallbackFunction   in_input_callback_func,
+													Anvil::InputCallbacks          in_input_callback_collection,
                                                     bool                           in_visible)
 {
     WindowUniquePtr result_ptr(
@@ -76,7 +76,7 @@ Anvil::WindowUniquePtr Anvil::WindowWin3264::create(const std::string&          
                                  in_height,
                                  in_closable,
                                  in_present_callback_func, 
-								 in_input_callback_func),
+								 in_input_callback_collection),
         std::default_delete<Anvil::Window>()
     );
 
@@ -140,7 +140,7 @@ Anvil::WindowUniquePtr Anvil::WindowWin3264::create(HWND in_window_handle)
                                  window_size[0],
                                  window_size[1],
                                  nullptr, /* present_callback_func_ptr */
-								 nullptr) /* _input_callback_func_ptr */
+                                 Anvil::InputCallbacks()) /* _input_callback_func_ptr */
     );
 
     if (result_ptr)
@@ -297,7 +297,10 @@ LRESULT CALLBACK Anvil::WindowWin3264::msg_callback_pfn_proc(HWND   in_window_ha
                                                                                     GWLP_USERDATA) );
 
 	// Custom -> process the message
-	window_ptr->process_message(in_message_id, in_param_wide, in_param_long);
+	window_ptr->process_message(in_window_handle, 
+                                in_message_id, 
+                                in_param_wide,
+                                in_param_long);
 
     switch (in_message_id)
     {
@@ -346,78 +349,296 @@ LRESULT CALLBACK Anvil::WindowWin3264::msg_callback_pfn_proc(HWND   in_window_ha
                          in_param_long);
 }
 
-void Anvil::WindowWin3264::process_message(UINT   in_message_id,
-	WPARAM in_param_wide,
-	LPARAM in_param_long)
+void Anvil::WindowWin3264::process_message(HWND   in_window_handle,
+                                           UINT   in_message_id,
+                                           WPARAM in_param_wide,
+                                           LPARAM in_param_long)
 {
 	WORD x, y;
 
 	x = LOWORD(in_param_long);
 	y = HIWORD(in_param_long);
 
+    auto GetInputMods = [&]()
+    {
+        uint32_t mods = 0;
+
+        if (m_KeyStatus[static_cast<int>(InputKey::KEY_LEFT_SHIFT)] || m_KeyStatus[static_cast<int>(InputKey::KEY_RIGHT_SHIFT)])
+        {
+            mods = mods | static_cast<int>(InputMods::SHIFT);
+        }
+
+        if (m_KeyStatus[static_cast<int>(InputKey::KEY_LEFT_ALT)] || m_KeyStatus[static_cast<int>(InputKey::KEY_RIGHT_ALT)])
+        {
+            mods = mods | static_cast<int>(InputMods::ALT);
+        }
+
+        if (m_KeyStatus[static_cast<int>(InputKey::KEY_LEFT_CONTROL)] || m_KeyStatus[static_cast<int>(InputKey::KEY_RIGHT_CONTROL)])
+        {
+            mods = mods | static_cast<int>(InputMods::CONTROL);
+        }
+
+        if (m_KeyStatus[static_cast<int>(InputKey::KEY_LEFT_SUPER)] || m_KeyStatus[static_cast<int>(InputKey::KEY_RIGHT_SUPER)])
+        {
+            mods = mods | static_cast<int>(InputMods::SUPER);
+        }
+
+        return mods;
+    };
+
 	switch (in_message_id)
 	{
-		// Keyboard
-	case WM_KEYDOWN:
-	{
-		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Keyboard, WindowInput::Action::KeyDown, (char)in_param_wide));
-		break;
-	}
-	case WM_KEYUP:
-	{
-		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Keyboard, WindowInput::Action::KeyUp, (char)in_param_wide));
-		break;
-	}
+        case WM_CHAR:
+        {
+            if (m_input_callback_collection.charCallback)
+            {
+                m_input_callback_collection.charCallback(static_cast<uint32_t>(in_param_wide));
+            }
 
-	// Mouse
-	case WM_LBUTTONDOWN:
-	{
-		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, WindowInput::Action::KeyDown, WindowInput::Complement::Left, (uint32_t)x, (uint32_t)y));
-		break;
-	}
-	case WM_LBUTTONUP:
-	{
-		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, WindowInput::Action::KeyUp, WindowInput::Complement::Left, (uint32_t)x, (uint32_t)y));
-		break;
-	}
-	case WM_RBUTTONDOWN:
-	{
-		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, WindowInput::Action::KeyDown, WindowInput::Complement::Right, (uint32_t)x, (uint32_t)y));
-		break;
-	}
-	case WM_RBUTTONUP:
-	{
-		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, WindowInput::Action::KeyUp, WindowInput::Complement::Right, (uint32_t)x, (uint32_t)y));
-		break;
-	}
-	case WM_MBUTTONDOWN:
-	{
-		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, WindowInput::Action::KeyDown, WindowInput::Complement::Middle, (uint32_t)x, (uint32_t)y));
-		break;
-	}
-	case WM_MBUTTONUP:
-	{
-		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, WindowInput::Action::KeyUp, WindowInput::Complement::Middle, (uint32_t)x, (uint32_t)y));
-		break;
-	}
-	case WM_MOUSEWHEEL:
-	{
-		// Determine the wheel roll amount
-		int amount = (int)(short)HIWORD(in_param_wide);
-		if (amount != 0) amount /= WHEEL_DELTA; // Adjust to -1~1 range
+            break;
+        }
 
-		// Determine the action
-		WindowInput::Action action = amount > 0 ? action = WindowInput::Action::ScrollUp : action = WindowInput::Action::ScrollDown;
+	    case WM_KEYDOWN:
+	    {
+            if (static_cast<int>(in_param_wide) < static_cast<int>(InputKey::MAX_COUNT))
+            {
+                m_KeyStatus[static_cast<int>(in_param_wide)] = true;
+            }
 
-		// Get the cursos position
-		POINT p;
-		GetCursorPos(&p);
-		HWND Handle = WindowFromPoint(p);
-		ScreenToClient(Handle, &p);
+            if (m_input_callback_collection.keyCallback)
+            {
+                m_input_callback_collection.keyCallback(static_cast<InputKey>(in_param_wide), static_cast<uint32_t>(in_param_wide), Anvil::InputAction::PRESS, GetInputMods());
+            }
+    
+		    break;
+	    }
 
-		if (m_input_callback_func) m_input_callback_func(WindowInput(WindowInput::Type::Mouse, action, WindowInput::Complement::Middle, p.x, p.y));
-		break;
-	}
+	    case WM_KEYUP:
+	    {
+            if (static_cast<int>(in_param_wide) < static_cast<int>(InputKey::MAX_COUNT))
+            {
+                m_KeyStatus[static_cast<int>(in_param_wide)] = false;
+            }
+
+            if (m_input_callback_collection.keyCallback)
+            {
+                m_input_callback_collection.keyCallback(static_cast<InputKey>(in_param_wide), static_cast<uint32_t>(in_param_wide), Anvil::InputAction::RELEASE, GetInputMods());
+            }		
+        
+            break;
+	    }
+
+	    case WM_LBUTTONDOWN:
+	    {
+            if (m_input_callback_collection.mouseButtonCallback)
+            {
+                m_input_callback_collection.mouseButtonCallback(InputMouseButton::BUTTON_LEFT, InputAction::PRESS, GetInputMods());
+            }
+            
+            break;
+	    }
+
+	    case WM_LBUTTONUP:
+	    {
+            if (m_input_callback_collection.mouseButtonCallback)
+            {
+                m_input_callback_collection.mouseButtonCallback(InputMouseButton::BUTTON_LEFT, InputAction::RELEASE, GetInputMods());
+            }
+
+            break;
+	    }
+
+	    case WM_RBUTTONDOWN:
+	    {
+            if (m_input_callback_collection.mouseButtonCallback)
+            {
+                m_input_callback_collection.mouseButtonCallback(InputMouseButton::BUTTON_RIGHT, InputAction::PRESS, GetInputMods());
+            }
+
+            break;
+	    }
+
+	    case WM_RBUTTONUP:
+	    {
+            if (m_input_callback_collection.mouseButtonCallback)
+            {
+                m_input_callback_collection.mouseButtonCallback(InputMouseButton::BUTTON_RIGHT, InputAction::RELEASE, GetInputMods());
+            }
+
+            break;
+	    }
+
+	    case WM_MBUTTONDOWN:
+	    {
+            if (m_input_callback_collection.mouseButtonCallback)
+            {
+                m_input_callback_collection.mouseButtonCallback(InputMouseButton::BUTTON_MIDDLE, InputAction::PRESS, GetInputMods());
+            }
+
+            break;
+	    }
+
+	    case WM_MBUTTONUP:
+	    {
+            if (m_input_callback_collection.mouseButtonCallback)
+            {
+                m_input_callback_collection.mouseButtonCallback(InputMouseButton::BUTTON_MIDDLE, InputAction::RELEASE, GetInputMods());
+            }
+
+            break;
+	    }
+
+	    case WM_MOUSEWHEEL:
+	    {
+		    // Determine the wheel roll amount
+		    int amount = (int)(short)HIWORD(in_param_wide);
+		    if (amount != 0) amount /= WHEEL_DELTA; // Adjust to -1~1 range
+
+            if (m_input_callback_collection.scrollCallback)
+            {
+                m_input_callback_collection.scrollCallback(amount, 0);
+            }
+
+		    break;
+	    }
+
+        case WM_MOUSEMOVE:
+        {
+            if (m_input_callback_collection.cursorPosCallback)
+            {
+                POINT p;
+                GetCursorPos(&p);
+                ScreenToClient(in_window_handle, &p);
+
+                m_input_callback_collection.cursorPosCallback(static_cast<uint32_t>(p.x), static_cast<uint32_t>(p.y));
+            }
+
+            break;
+        }
+
+        case WM_MOVING:
+        {
+            if (m_input_callback_collection.windowPosCallback)
+            {
+                m_input_callback_collection.windowPosCallback(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
+            }
+
+            break;
+        }
+
+        case WM_SIZE:
+        {
+            if (m_input_callback_collection.windowSizeCallback)
+            {
+                m_input_callback_collection.windowSizeCallback(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
+            }
+
+            break;
+        }
+
+        case WM_CLOSE:
+        {
+            if (m_input_callback_collection.windowCloseCallback)
+            {
+                m_input_callback_collection.windowCloseCallback();
+            }
+
+            break;
+        }
+
+        case WM_ACTIVATE:
+        {
+            if (m_input_callback_collection.windowFocusCallback)
+            {
+                // activation flag
+                auto fActive = LOWORD(in_param_wide); 
+                
+                m_input_callback_collection.windowFocusCallback(static_cast<bool>(!(fActive == WA_INACTIVE)));
+            }
+
+            break;
+        }
+
+        case WM_SYSCOMMAND:
+        {
+            if ((in_param_wide & 0xFFF0) == SC_MINIMIZE)
+            {
+                m_minimized = true;
+
+                if (m_input_callback_collection.windowMinimizeCallback)
+                {
+                    m_input_callback_collection.windowMinimizeCallback(true);
+                }
+            }
+            else if ((in_param_wide & 0xFFF0) == SC_MAXIMIZE && m_input_callback_collection.windowMinimizeCallback)
+            {
+                m_minimized = false;
+
+                if (m_input_callback_collection.windowMinimizeCallback)
+                {
+                    m_input_callback_collection.windowMinimizeCallback(false);
+                }
+            }
+        }
+
+        case WM_DROPFILES:
+        {
+            if (m_input_callback_collection.windowDropCallback)
+            {
+                TCHAR lpszFile[MAX_PATH] = { 0 };
+                UINT uFile = 0;
+                HDROP hDrop = (HDROP)in_param_wide;
+                std::vector<std::wstring> files;
+
+                uFile = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, NULL);
+
+                for (unsigned i = 0; i < uFile; i++)
+                {
+                    lpszFile[0] = '\0';
+                    if (DragQueryFile(hDrop, i, lpszFile, MAX_PATH))
+                    {
+#ifdef _UNICODE
+                        files.push_back(lpszFile);
+#else
+                        // Need to convert the string
+                        // First get the length needed
+                        size_t length = mbstowcs(nullptr, lpszFile, 0);
+
+                        // Allocate a temporary string
+                        wchar_t* tmpstr = new wchar_t[length + 1];
+
+                        // Do the actual conversion
+                        mbstowcs(tmpstr, lpszFile, length + 1);
+
+                        files.push_back(tmpstr);
+
+                        // Free the temporary string
+                        delete[] tmpstr;
+#endif
+                    }
+                }
+
+                DragFinish(hDrop);
+
+                m_input_callback_collection.windowDropCallback(files);
+            }
+            
+            break;
+        }
+
+        case WM_MOUSEHOVER:
+        {
+            m_hovered = true;
+
+            break;
+        }
+
+        case WM_MOUSELEAVE:
+        {
+            m_hovered = false;
+
+            break;
+        }
 	}
 }
 
@@ -476,7 +697,7 @@ void Anvil::WindowWin3264::set_title(const std::string& in_new_title)
 
 void Anvil::WindowWin3264::get_cursor_position(uint32_t& x, uint32_t& y) const
 {
-	// Get the cursos position (currently only works on windows
+	// Get the cursor position (currently only works on windows
 	POINT p;
 	GetCursorPos(&p);
 	HWND Handle = WindowFromPoint(p);
@@ -502,4 +723,193 @@ void Anvil::WindowWin3264::show_cursor(bool show)
 	{
 		SetCursor(NULL);
 	}
+}
+
+bool Anvil::WindowWin3264::get_is_focused() const
+{
+    return m_window == GetFocus();
+}
+
+void Anvil::WindowWin3264::set_focused()
+{
+    SetFocus(m_window);
+}
+
+bool Anvil::WindowWin3264::get_is_hovered() const
+{
+    return m_hovered;
+}
+
+bool Anvil::WindowWin3264::get_is_minimized() const
+{
+    return m_minimized;
+}
+
+float Anvil::WindowWin3264::get_opacity() const
+{
+    COLORREF pcrKey;
+    BYTE pbAlpha;
+    DWORD pdwFlags;
+    GetLayeredWindowAttributes(m_window, &pcrKey, &pbAlpha, &pdwFlags);
+
+    return min(1.0f, static_cast<float>(pbAlpha) / 255.0f);
+}
+
+void Anvil::WindowWin3264::set_opacity(float opacity)
+{
+    SetLayeredWindowAttributes(m_window, RGB(0, 0, 0), max(255, static_cast<BYTE>(opacity * 255.0)), LWA_ALPHA);
+}
+
+void Anvil::WindowWin3264::set_taskbar_visibility(bool visible)
+{
+    long style = GetWindowLong(m_window, GWL_STYLE);
+    style &= ~(WS_VISIBLE);
+
+    style |= WS_EX_TOOLWINDOW;
+
+    if (visible)
+    {
+        style &= WS_EX_APPWINDOW;
+
+    }
+    else
+    {
+        style &= ~(WS_EX_APPWINDOW);
+    }
+
+    ShowWindow(m_window, SW_HIDE);
+    SetWindowLong(m_window, GWL_STYLE, style);
+    ShowWindow(m_window, SW_SHOW);
+
+    if (!m_visible)
+    {
+        ShowWindow(m_window, SW_HIDE);
+    }
+}
+
+void Anvil::WindowWin3264::set_visibility(bool visible)
+{
+    m_visible = visible;
+
+    ShowWindow(m_window, visible ? SW_SHOW : SW_HIDE);
+}
+
+uint32_t Anvil::WindowWin3264::get_current_width()  const
+{
+    RECT rect;
+    if (GetWindowRect(m_window, &rect))
+    {
+        return static_cast<uint32_t>(rect.right - rect.left);
+    }
+
+    return 0;
+}
+
+uint32_t Anvil::WindowWin3264::get_current_height() const
+{
+    RECT rect;
+    if (GetWindowRect(m_window, &rect))
+    {
+        return static_cast<uint32_t>(rect.bottom - rect.top);
+    }
+
+    return 0;
+}
+
+uint32_t Anvil::WindowWin3264::get_current_x() const
+{
+    RECT rect;
+    if (GetWindowRect(m_window, &rect))
+    {
+        return static_cast<uint32_t>(rect.left);
+    }
+
+    return 0;
+}
+
+uint32_t Anvil::WindowWin3264::get_curretn_y() const
+{
+    RECT rect;
+    if (GetWindowRect(m_window, &rect))
+    {
+        return static_cast<uint32_t>(rect.top);
+    }
+
+    return 0;
+}
+
+void Anvil::WindowWin3264::set_clipboard_text(std::string text)
+{
+    HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, text.size() + 1);
+    memcpy(GlobalLock(hMem), text.data(), text.size() + 1);
+    GlobalUnlock(hMem);
+    OpenClipboard(0);
+    EmptyClipboard();
+    SetClipboardData(CF_TEXT, hMem);
+    CloseClipboard();
+}
+
+std::wstring Anvil::WindowWin3264::get_clipboard_text() const
+{
+    // Try opening the clipboard
+    if (!OpenClipboard(nullptr))
+    {
+#ifdef _UNICODE
+        return "";
+#else
+        return L"";
+#endif
+    }
+
+    // Get handle of clipboard object for ANSI text
+    HANDLE hData = GetClipboardData(CF_TEXT);
+    if (hData == nullptr)
+    {
+#ifdef _UNICODE
+        return "";
+#else
+        return L"";
+#endif
+    }
+
+    // Lock the handle to get the actual text pointer
+    char* pszText = static_cast<char*>(GlobalLock(hData));
+    if (pszText == nullptr)
+    {
+#ifdef _UNICODE
+        return "";
+#else
+        return L"";
+#endif
+    }
+
+    // Save text in a string class instance
+    std::string text(pszText);
+
+    // Release the lock
+    GlobalUnlock(hData);
+
+    // Release the clipboard
+    CloseClipboard();
+
+#ifdef _UNICODE
+    return pszText;
+#else
+    // Need to convert the string
+    // First get the length needed
+    size_t length = mbstowcs(nullptr, pszText, 0);
+
+    // Allocate a temporary string
+    wchar_t* tmpstr = new wchar_t[length + 1];
+
+    // Do the actual conversion
+    mbstowcs(tmpstr, pszText, length + 1);
+
+    std::wstring result = tmpstr;
+
+    // Free the temporary string
+    delete[] tmpstr;
+
+    return result;
+#endif
 }

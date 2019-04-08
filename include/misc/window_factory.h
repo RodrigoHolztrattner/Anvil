@@ -66,7 +66,7 @@ namespace Anvil
                                                     unsigned int                   in_height,
                                                     bool                           in_closable,
                                                     Anvil::PresentCallbackFunction in_present_callback_func,
-													Anvil::InputCallbackFunction   in_input_callback_func,
+													Anvil::InputCallbacks          in_input_callback_collection,
                                                     bool                           in_visible               = true);
 
         /* Creates a Window wrapper instance using app-managed window handle.

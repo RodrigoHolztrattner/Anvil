@@ -38,7 +38,8 @@ namespace Anvil
         static Anvil::WindowUniquePtr create(const std::string&             in_title,
                                              unsigned int                   in_width,
                                              unsigned int                   in_height,
-                                             Anvil::PresentCallbackFunction in_present_callback_func);
+                                             Anvil::PresentCallbackFunction in_present_callback_func,
+                                             Anvil::InputCallbacks          in_input_callback_collection);
 
         virtual ~DummyWindow()
         {
@@ -71,7 +72,8 @@ namespace Anvil
         DummyWindow(const std::string&      in_title,
                     unsigned int            in_width,
                     unsigned int            in_height,
-                    PresentCallbackFunction in_present_callback_func);
+                    PresentCallbackFunction in_present_callback_func,
+                    InputCallbacks          in_input_callback_collection);
 
         bool init();
     };
@@ -83,7 +85,8 @@ namespace Anvil
         static Anvil::WindowUniquePtr create(const std::string&      in_title,
                                              unsigned int            in_width,
                                              unsigned int            in_height,
-                                             PresentCallbackFunction in_present_callback_func);
+                                             PresentCallbackFunction in_present_callback_func,
+                                             InputCallbacks          in_input_callback_collection);
 
         /** Destructor */
         virtual ~DummyWindowWithPNGSnapshots()
@@ -112,7 +115,8 @@ namespace Anvil
         DummyWindowWithPNGSnapshots(const std::string&      in_title,
                                     unsigned int            in_width,
                                     unsigned int            in_height,
-                                    PresentCallbackFunction in_present_callback_func);
+                                    PresentCallbackFunction in_present_callback_func, 
+                                    InputCallbacks          in_input_callback_collection);
 
         /** Grabs contents of the specified swapchain image and returns them in a raw R8G8B8A8_UNORM
          *  format.
