@@ -283,10 +283,13 @@ LRESULT CALLBACK Anvil::WindowWin3264::msg_callback_pfn_proc(HWND   in_window_ha
                                                                                     GWLP_USERDATA) );
 
 	// Custom -> process the message
-	window_ptr->process_message(in_window_handle, 
-                                in_message_id, 
-                                in_param_wide,
-                                in_param_long);
+    if (window_ptr != nullptr)
+    {
+        window_ptr->process_message(in_window_handle,
+                                    in_message_id,
+                                    in_param_wide,
+                                    in_param_long);
+    }
 
     switch (in_message_id)
     {
