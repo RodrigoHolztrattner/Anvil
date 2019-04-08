@@ -568,6 +568,8 @@ void Anvil::WindowWin3264::process_message(HWND   in_window_handle,
                     m_input_callback_collection.windowMinimizeCallback(false);
                 }
             }
+
+            break;
         }
 
         case WM_DROPFILES:
