@@ -169,3 +169,20 @@ std::wstring Anvil::Window::get_clipboard_text() const
     return L"";
 #endif
 }
+
+/* Returns a vector containing the information of all monitors */
+std::vector<Anvil::MonitorInfo> Anvil::Window::get_monitors() const
+{
+    return {};
+}
+
+void Anvil::Window::poll_events()
+{
+    /* Stub */
+}
+
+/* Call the rendering callback associated with this window */
+void Anvil::Window::render()
+{
+    /* Stub */
+}

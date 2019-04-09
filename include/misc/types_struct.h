@@ -32,6 +32,17 @@
 
 namespace Anvil
 {
+    struct MonitorInfo
+    {
+        bool                    is_primary;
+        int32_t                 x;
+        int32_t                 y;
+        uint32_t                width;
+        uint32_t                height;
+        uint32_t                x_scale; // TODO: Use optional
+        uint32_t                y_scale; // TODO: Use optional
+    };
+
     template<typename EnumClass>
     struct EnumClassHasher
     {

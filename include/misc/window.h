@@ -239,6 +239,21 @@ namespace Anvil
         /* Returns the clipboard text (if supported) */
         virtual std::wstring get_clipboard_text() const;
 
+        /* Returns a vector containing the information of all monitors */
+        virtual std::vector<MonitorInfo> get_monitors() const;
+
+        /* Set that this window should use manual rendering and event pooling */
+        void set_manual_event_polling_and_rendering()
+        {
+            m_manual_poll_render = true;
+        }
+
+        /* Poll events for this window */
+        virtual void poll_events();
+
+        /* Call the rendering callback associated with this window */
+        virtual void render();
+
         /** Makes the window responsive to user's action and starts updating window contents.
          *
          *  This function will *block* the calling thread. To unblock it, call close().
@@ -284,6 +299,7 @@ namespace Anvil
         bool            m_hovered = false;
         bool            m_minimized = false;
         bool            m_visible = true;
+        bool            m_manual_poll_render = false;
 
         /* protected functions */
 

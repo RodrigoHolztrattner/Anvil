@@ -22,6 +22,7 @@
 
 #include "misc/window_win3264.h"
 #include <sstream>
+#include <shellscalingapi.h>
 
 #define WM_DESTROY_WINDOW (WM_USER + 1)
 
@@ -938,4 +939,116 @@ std::wstring Anvil::WindowWin3264::get_clipboard_text() const
 
     return result;
 #endif
+}
+
+BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC, LPRECT lprcMonitor, LPARAM dwData)
+{
+    Anvil::MonitorInfo monitor_info;
+
+    UINT dpiX;
+    UINT dpiY;
+
+    // DPI
+    monitor_info.x_scale = 0; // TODO: Not necessary if optional is available
+    monitor_info.y_scale = 0; // TODO: Not necessary if optional is available
+    if(GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
+    {
+        monitor_info.x_scale = static_cast<uint32_t>(dpiX);
+        monitor_info.y_scale = static_cast<uint32_t>(dpiY);
+    }
+
+    // Pos/size/primary
+    {
+        RECT Rect;
+        MONITORINFO mi;
+        mi.cbSize = sizeof(mi);
+        Rect = *lprcMonitor;
+        GetMonitorInfo(hMonitor, &mi);
+        
+        monitor_info.x = mi.rcMonitor.right;
+        monitor_info.y = mi.rcMonitor.top;
+        monitor_info.width = mi.rcMonitor.left - mi.rcMonitor.right;
+        monitor_info.height = mi.rcMonitor.bottom - mi.rcMonitor.top;
+
+        monitor_info.is_primary = (monitor_info.x == 0 && monitor_info.y == 0);
+    }
+
+    std::vector<Anvil::MonitorInfo>& monitors = *(std::vector<Anvil::MonitorInfo>*)dwData;
+    monitors.push_back(monitor_info);
+
+    return TRUE;
+}
+
+/* Returns a vector containing the information of all monitors */
+std::vector<Anvil::MonitorInfo> Anvil::WindowWin3264::get_monitors() const
+{
+    std::vector<Anvil::MonitorInfo> monitors;
+
+    if (!EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM)& monitors))
+    {
+        return {};
+    }
+
+    return monitors;
+}
+
+void Anvil::WindowWin3264::poll_events()
+{
+    if (!m_manual_poll_render)
+    {
+        anvil_assert_fail();
+    }
+
+    /* This function should only be called for wrapper instances which have created the window! */
+    anvil_assert(m_window_owned);
+
+    /* Run the message loop */
+    MSG msg;
+    bool wants_exit = false;
+
+    while (::PeekMessage(&msg,
+                            nullptr,
+                            0,
+                            0,
+                            PM_REMOVE))
+    {
+        if (msg.message == WM_QUIT)
+        {
+            wants_exit = true;
+
+            break;
+        }
+
+        ::TranslateMessage(&msg);
+        ::DispatchMessage(&msg);
+    }
+
+    if (msg.message == WM_QUIT)
+    {
+        wants_exit = true;
+    }
+    else
+    if (m_present_callback_func != nullptr)
+    {
+        m_present_callback_func();
+    }
+    
+    if (wants_exit)
+    {
+        m_window_close_finished = true;
+    }
+}
+
+/* Call the rendering callback associated with this window */
+void Anvil::WindowWin3264::render()
+{
+    if (!m_manual_poll_render)
+    {
+        anvil_assert_fail();
+    }
+
+    if (m_present_callback_func != nullptr)
+    {
+        m_present_callback_func();
+    }
 }

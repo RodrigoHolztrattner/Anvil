@@ -154,6 +154,15 @@ namespace Anvil
         /* Returns the clipboard text (if supported) */
         std::wstring get_clipboard_text() const override;
 
+        /* Returns a vector containing the information of all monitors */
+        virtual std::vector<MonitorInfo> get_monitors() const;
+
+        /* Poll events for this window */
+        virtual void poll_events();
+
+        /* Call the rendering callback associated with this window */
+        virtual void render();
+
     private:
         /* Private functions */
 

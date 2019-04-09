@@ -29,6 +29,7 @@
 #include <forward_list>
 #include <mutex>
 #include <string>
+#include <optional>
 
 #include "config.h"
 #include "misc/debug.h"
