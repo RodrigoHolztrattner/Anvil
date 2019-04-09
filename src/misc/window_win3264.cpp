@@ -972,9 +972,9 @@ BOOL CALLBACK Anvil::WindowWin3264::MonitorEnumProc(HMONITOR hMonitor, HDC, LPRE
         Rect = *lprcMonitor;
         GetMonitorInfo(hMonitor, &mi);
         
-        monitor_info.x = mi.rcMonitor.right;
+        monitor_info.x = mi.rcMonitor.left;
         monitor_info.y = mi.rcMonitor.top;
-        monitor_info.width = mi.rcMonitor.left - mi.rcMonitor.right;
+        monitor_info.width = mi.rcMonitor.right - mi.rcMonitor.left;
         monitor_info.height = mi.rcMonitor.bottom - mi.rcMonitor.top;
 
         monitor_info.is_primary = (monitor_info.x == 0 && monitor_info.y == 0);
