@@ -22,7 +22,7 @@
 
 #include "misc/window_win3264.h"
 #include <sstream>
-#include <shellscalingapi.h>
+// #include <shellscalingapi.h>
 
 #define WM_DESTROY_WINDOW (WM_USER + 1)
 
@@ -950,17 +950,19 @@ BOOL CALLBACK Anvil::WindowWin3264::MonitorEnumProc(HMONITOR hMonitor, HDC, LPRE
 {
     Anvil::MonitorInfo monitor_info;
 
-    UINT dpiX;
-    UINT dpiY;
+    // UINT dpiX;
+    // UINT dpiY;
 
     // DPI
     monitor_info.x_scale = 0; // TODO: Not necessary if optional is available
     monitor_info.y_scale = 0; // TODO: Not necessary if optional is available
+    /* TODO: Missing shcore.dll
     if(GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
     {
         monitor_info.x_scale = static_cast<uint32_t>(dpiX);
         monitor_info.y_scale = static_cast<uint32_t>(dpiY);
     }
+    */ 
 
     // Pos/size/primary
     {
