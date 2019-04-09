@@ -187,6 +187,11 @@ namespace Anvil
                                                       WPARAM in_param_wide,
                                                       LPARAM in_param_long);
 
+        static BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, 
+                                             HDC hdcMonitor,
+                                             LPRECT lprcMonitor,
+                                             LPARAM dwData);
+
         void process_message(HWND in_window_handle,
                              UINT   in_message_id,
                              WPARAM in_param_wide,

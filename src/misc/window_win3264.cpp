@@ -946,7 +946,7 @@ std::wstring Anvil::WindowWin3264::get_clipboard_text() const
 #endif
 }
 
-BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC, LPRECT lprcMonitor, LPARAM dwData)
+BOOL CALLBACK Anvil::WindowWin3264::MonitorEnumProc(HMONITOR hMonitor, HDC, LPRECT lprcMonitor, LPARAM dwData)
 {
     Anvil::MonitorInfo monitor_info;
 
