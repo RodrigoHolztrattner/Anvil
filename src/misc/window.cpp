@@ -132,13 +132,30 @@ uint32_t Anvil::Window::get_current_x() const
     return 0;
 }
 
-uint32_t Anvil::Window::get_curretn_y() const
+uint32_t Anvil::Window::get_current_y() const
 {
     return 0;
 }
 
+/* Set this window's ordering */
+void Anvil::Window::set_ordering(WindowOrdering)
+{
+    /* Stub */
+}
+
+void Anvil::Window::set_pos(uint32_t, uint32_t)
+{
+    /* Stub */
+}
+
+/* Set the window size */
+void Anvil::Window::set_size(uint32_t, uint32_t)
+{
+    /* Stub */
+}
+
 /* Set the clipboard text (if supported) */
-void Anvil::Window::set_clipboard_text(std::string text)
+void Anvil::Window::set_clipboard_text(std::string)
 {
     /* Stub */
 }

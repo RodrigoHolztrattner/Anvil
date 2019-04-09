@@ -818,7 +818,7 @@ uint32_t Anvil::WindowWin3264::get_current_x() const
     return 0;
 }
 
-uint32_t Anvil::WindowWin3264::get_curretn_y() const
+uint32_t Anvil::WindowWin3264::get_current_y() const
 {
     RECT rect;
     if (GetWindowRect(m_window, &rect))
@@ -827,6 +827,41 @@ uint32_t Anvil::WindowWin3264::get_curretn_y() const
     }
 
     return 0;
+}
+
+void Anvil::WindowWin3264::set_pos(uint32_t x, uint32_t y)
+{
+    SetWindowPos(m_window,
+                 NULL,
+                 static_cast<int>(x), 
+                 static_cast<int>(y),
+                 static_cast<int>(get_current_width()), 
+                 static_cast<int>(get_current_height()),
+                 NULL);
+}
+
+/* Set the window size */
+void Anvil::WindowWin3264::set_size(uint32_t width, uint32_t height)
+{
+    SetWindowPos(m_window,
+                 NULL,
+                 static_cast<int>(get_current_x()),
+                 static_cast<int>(get_current_y()),
+                 static_cast<int>(width),
+                 static_cast<int>(height),
+                 NULL);
+}
+
+/* Set this window's ordering */
+void Anvil::WindowWin3264::set_ordering(WindowOrdering order)
+{
+    SetWindowPos(m_window,
+        ((HWND)order),
+                 static_cast<int>(get_current_x()),
+                 static_cast<int>(get_current_y()),
+                 static_cast<int>(get_current_width()),
+                 static_cast<int>(get_current_height()),
+                 NULL);
 }
 
 void Anvil::WindowWin3264::set_clipboard_text(std::string text)

@@ -401,6 +401,14 @@ namespace Anvil
         MAX_COUNT = 512
     };
 
+    enum class WindowOrdering
+    {
+        BOTTOM      = 1,
+        NO_TOPMOST  = -2, 
+        TOP         = 0, 
+        TOPMOST     = -1
+    };
+
     /* NOTE: These map 1:1 to VK equivalents */
     enum class AccessFlagBits
     {

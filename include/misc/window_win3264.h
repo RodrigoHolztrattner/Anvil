@@ -137,7 +137,16 @@ namespace Anvil
 
         /* Returns the current position for this window */
         uint32_t get_current_x() const override;
-        uint32_t get_curretn_y() const override;
+        uint32_t get_current_y() const override;
+
+        /* Set this window's ordering */
+        virtual void set_ordering(WindowOrdering order);
+
+        /* Set the window position */
+        virtual void set_pos(uint32_t x, uint32_t y);
+
+        /* Set the window size */
+        virtual void set_size(uint32_t width, uint32_t height);
 
         /* Set the clipboard text (if supported) */
         void set_clipboard_text(std::string text) override;
