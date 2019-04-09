@@ -637,6 +637,11 @@ void Anvil::WindowWin3264::process_message(HWND   in_window_handle,
 /* Please see header for specification */
 void Anvil::WindowWin3264::run()
 {
+    if (m_manual_poll_render)
+    {
+        anvil_assert_fail();
+    }
+
     int done = 0;
 
     /* This function should only be called for wrapper instances which have created the window! */
