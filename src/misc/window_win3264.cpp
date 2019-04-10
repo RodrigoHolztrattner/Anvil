@@ -517,6 +517,16 @@ void Anvil::WindowWin3264::process_message(HWND   in_window_handle,
                 m_input_callback_collection.cursorPosCallback(static_cast<uint32_t>(p.x), static_cast<uint32_t>(p.y));
             }
 
+            // Track mouse hover
+            TRACKMOUSEEVENT tme = { 0 };
+            DWORD dwPos = GetMessagePos();
+            POINTS pts = MAKEPOINTS(dwPos);
+            tme.cbSize = sizeof(TRACKMOUSEEVENT);
+            tme.dwFlags = TME_HOVER | TME_LEAVE;
+            tme.hwndTrack = m_window;
+            tme.dwHoverTime = 200;//HOVER_DEFAULT;
+            TrackMouseEvent(&tme);
+
             break;
         }
 
