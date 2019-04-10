@@ -126,7 +126,7 @@ namespace Anvil
         void set_opacity(float opacity) override;
 
         /* Hide/show this window on the taskbar (if supported) */
-        void set_taskbar_visibility(bool visible) override;
+        void set_taskbar_visibility(bool visible, Window* opt_parent_window) override;
 
         /* Hide/show this window */
         void set_visibility(bool visible) override;
@@ -158,7 +158,7 @@ namespace Anvil
         virtual std::vector<MonitorInfo> get_monitors() const;
 
         /* Poll events for this window */
-        virtual void poll_events();
+        virtual void poll_events(bool cursor_pass_through = false);
 
         /* Call the rendering callback associated with this window */
         virtual void render();

@@ -240,6 +240,13 @@ bool Anvil::WindowWin3264::init(const bool& in_visible)
                                     instance,
                                     nullptr); /* lParam */
 
+        if (!in_visible)
+        {
+            SetWindowLong(m_window, GWL_STYLE, 0); //remove all window styles, check MSDN for details
+            ShowWindow(m_window, SW_SHOW); //display window
+            SetWindowPos(m_window, 0, 0, 0, window_rect.right - window_rect.left, window_rect.bottom - window_rect.top, SWP_FRAMECHANGED);
+        }
+
         if (m_window == nullptr)
         {
             anvil_assert_fail();
@@ -282,6 +289,11 @@ LRESULT CALLBACK Anvil::WindowWin3264::msg_callback_pfn_proc(HWND   in_window_ha
 {
     WindowWin3264* window_ptr = reinterpret_cast<WindowWin3264*>(::GetWindowLongPtr(in_window_handle,
                                                                                     GWLP_USERDATA) );
+
+    if (window_ptr->is_cursor_pass_through_set() && in_message_id == WM_NCHITTEST)
+    {
+        return HTTRANSPARENT;
+    }
 
 	// Custom -> process the message
     if (window_ptr != nullptr)
@@ -695,10 +707,9 @@ void Anvil::WindowWin3264::set_title(const std::string& in_new_title)
 void Anvil::WindowWin3264::get_cursor_position(uint32_t& x, uint32_t& y) const
 {
 	// Get the cursor position (currently only works on windows
-	POINT p;
-	GetCursorPos(&p);
-	HWND Handle = WindowFromPoint(p);
-	ScreenToClient(Handle, &p);
+    POINT p;
+    GetCursorPos(&p);
+    ScreenToClient(m_window, &p);
 
 	// Set the mouse x and y
 	x = static_cast<uint32_t>(p.x);
@@ -757,7 +768,7 @@ void Anvil::WindowWin3264::set_opacity(float opacity)
     SetLayeredWindowAttributes(m_window, RGB(0, 0, 0), max(255, static_cast<BYTE>(opacity * 255.0)), LWA_ALPHA);
 }
 
-void Anvil::WindowWin3264::set_taskbar_visibility(bool visible)
+void Anvil::WindowWin3264::set_taskbar_visibility(bool visible, Window* opt_parent_window)
 {
     long style = GetWindowLong(m_window, GWL_STYLE);
     style &= ~(WS_VISIBLE);
@@ -774,9 +785,16 @@ void Anvil::WindowWin3264::set_taskbar_visibility(bool visible)
         style &= ~(WS_EX_APPWINDOW);
     }
 
+    // Hide the window and apply the changes
     ShowWindow(m_window, SW_HIDE);
     SetWindowLong(m_window, GWL_STYLE, style);
-    ShowWindow(m_window, SW_SHOW);
+    SetWindowLong(m_window, GWL_EXSTYLE,
+                  GetWindowLong(m_window, GWL_EXSTYLE) & ~WS_EX_APPWINDOW & ~WS_EX_TOOLWINDOW);
+
+    if (!visible && opt_parent_window != nullptr)
+    {
+        SetWindowLongPtr(m_window, GWLP_HWNDPARENT, reinterpret_cast<LONG_PTR>(opt_parent_window->get_handle()));
+    }
 
     if (!m_visible)
     {
@@ -999,7 +1017,7 @@ std::vector<Anvil::MonitorInfo> Anvil::WindowWin3264::get_monitors() const
     return monitors;
 }
 
-void Anvil::WindowWin3264::poll_events()
+void Anvil::WindowWin3264::poll_events(bool cursor_pass_through)
 {
     if (!m_manual_poll_render)
     {
@@ -1008,6 +1026,8 @@ void Anvil::WindowWin3264::poll_events()
 
     /* This function should only be called for wrapper instances which have created the window! */
     anvil_assert(m_window_owned);
+
+    m_cursor_pass_through = cursor_pass_through;
 
     /* Run the message loop */
     MSG msg;

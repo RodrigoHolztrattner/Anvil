@@ -104,7 +104,7 @@ void Anvil::Window::set_opacity(float)
 }
 
 /* Hide/show this window on the taskbar (if supported) */
-void Anvil::Window::set_taskbar_visibility(bool)
+void Anvil::Window::set_taskbar_visibility(bool, Window*)
 {
     /* Stub */
 }
@@ -176,7 +176,7 @@ std::vector<Anvil::MonitorInfo> Anvil::Window::get_monitors() const
     return {};
 }
 
-void Anvil::Window::poll_events()
+void Anvil::Window::poll_events(bool)
 {
     /* Stub */
 }

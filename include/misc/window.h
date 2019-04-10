@@ -211,7 +211,7 @@ namespace Anvil
         virtual void set_opacity(float);
 
         /* Hide/show this window on the taskbar (if supported) */
-        virtual void set_taskbar_visibility(bool visible);
+        virtual void set_taskbar_visibility(bool visible, Window* opt_parent_window);
 
         /* Hide/show this window */
         virtual void set_visibility(bool visible);
@@ -249,7 +249,7 @@ namespace Anvil
         }
 
         /* Poll events for this window */
-        virtual void poll_events();
+        virtual void poll_events(bool cursor_pass_through = false);
 
         /* Call the rendering callback associated with this window */
         virtual void render();
@@ -276,9 +276,15 @@ namespace Anvil
         }
 
         /* Tells if the window closure process has finished */
-        bool is_window_close_finished()
+        bool is_window_close_finished() const
         {
             return m_window_close_finished;
+        }
+
+        /* Returns if this window is polling its events with the cursor pass-through option */
+        bool is_cursor_pass_through_set() const
+        {
+            return m_cursor_pass_through;
         }
 
     protected:
@@ -300,6 +306,7 @@ namespace Anvil
         bool            m_minimized = false;
         bool            m_visible = true;
         bool            m_manual_poll_render = false;
+        bool            m_cursor_pass_through = false;
 
         /* protected functions */
 
