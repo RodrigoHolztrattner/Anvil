@@ -290,7 +290,9 @@ LRESULT CALLBACK Anvil::WindowWin3264::msg_callback_pfn_proc(HWND   in_window_ha
     WindowWin3264* window_ptr = reinterpret_cast<WindowWin3264*>(::GetWindowLongPtr(in_window_handle,
                                                                                     GWLP_USERDATA) );
 
-    if (window_ptr->is_cursor_pass_through_set() && in_message_id == WM_NCHITTEST)
+    if (window_ptr != nullptr && 
+        window_ptr->is_cursor_pass_through_set() && 
+        in_message_id == WM_NCHITTEST)
     {
         return HTTRANSPARENT;
     }
