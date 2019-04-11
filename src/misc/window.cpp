@@ -49,14 +49,14 @@ Anvil::Window::~Window()
     /* Stub */
 }
 
-void Anvil::Window::get_cursor_position(uint32_t& x, uint32_t& y) const
+void Anvil::Window::get_cursor_position(int32_t& x, int32_t& y) const
 {
     x = 0;
     y = 0;
 }
 
 /* Set the window's cursor position */
-void Anvil::Window::set_cursor_position(uint32_t, uint32_t)
+void Anvil::Window::set_cursor_position(int32_t, int32_t)
 {
     /* Stub */
 }
@@ -127,12 +127,12 @@ uint32_t Anvil::Window::get_current_height() const
 }
 
 /* Returns the current position for this window */
-uint32_t Anvil::Window::get_current_x() const
+int32_t Anvil::Window::get_current_x() const
 {
     return 0;
 }
 
-uint32_t Anvil::Window::get_current_y() const
+int32_t Anvil::Window::get_current_y() const
 {
     return 0;
 }
@@ -143,7 +143,7 @@ void Anvil::Window::set_ordering(WindowOrdering)
     /* Stub */
 }
 
-void Anvil::Window::set_pos(uint32_t, uint32_t)
+void Anvil::Window::set_pos(int32_t, int32_t)
 {
     /* Stub */
 }

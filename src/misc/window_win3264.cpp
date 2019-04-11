@@ -716,7 +716,7 @@ void Anvil::WindowWin3264::set_title(const std::string& in_new_title)
                     in_new_title.c_str() );
 }
 
-void Anvil::WindowWin3264::get_cursor_position(uint32_t& x, uint32_t& y) const
+void Anvil::WindowWin3264::get_cursor_position(int32_t& x, int32_t& y) const
 {
 	// Get the cursor position (currently only works on windows
     POINT p;
@@ -724,11 +724,11 @@ void Anvil::WindowWin3264::get_cursor_position(uint32_t& x, uint32_t& y) const
     ScreenToClient(m_window, &p);
 
 	// Set the mouse x and y
-	x = static_cast<uint32_t>(p.x);
-	y = static_cast<uint32_t>(p.y);
+	x = static_cast<int32_t>(p.x);
+	y = static_cast<int32_t>(p.y);
 }
 
-void Anvil::WindowWin3264::set_cursor_position(uint32_t x, uint32_t y)
+void Anvil::WindowWin3264::set_cursor_position(int32_t x, int32_t y)
 {
 	SetCursorPos(x, y);
 }
@@ -843,23 +843,23 @@ uint32_t Anvil::WindowWin3264::get_current_height() const
     return 0;
 }
 
-uint32_t Anvil::WindowWin3264::get_current_x() const
+int32_t Anvil::WindowWin3264::get_current_x() const
 {
     RECT rect;
     if (GetWindowRect(m_window, &rect))
     {
-        return static_cast<uint32_t>(rect.left);
+        return static_cast<int32_t>(rect.left);
     }
 
     return 0;
 }
 
-uint32_t Anvil::WindowWin3264::get_current_y() const
+int32_t Anvil::WindowWin3264::get_current_y() const
 {
     RECT rect;
     if (GetWindowRect(m_window, &rect))
     {
-        return static_cast<uint32_t>(rect.top);
+        return static_cast<int32_t>(rect.top);
     }
 
     return 0;

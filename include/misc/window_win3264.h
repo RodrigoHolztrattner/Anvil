@@ -99,10 +99,10 @@ namespace Anvil
         void set_title(const std::string& in_new_title) override;
 
 		/* Returns window's cursor position */
-		void get_cursor_position(uint32_t& x, uint32_t& y) const override;
+		void get_cursor_position(int32_t& x, int32_t& y) const override;
 
 		/* Set the window's cursor position */
-		void set_cursor_position(uint32_t x, uint32_t y) override;
+		void set_cursor_position(int32_t x, int32_t y) override;
 
 		/* Hide/show the window's cursor */
 		void show_cursor(bool show) override;
@@ -136,8 +136,8 @@ namespace Anvil
         uint32_t get_current_height() const override;
 
         /* Returns the current position for this window */
-        uint32_t get_current_x() const override;
-        uint32_t get_current_y() const override;
+        int32_t get_current_x() const override;
+        int32_t get_current_y() const override;
 
         /* Set this window's ordering */
         virtual void set_ordering(WindowOrdering order);

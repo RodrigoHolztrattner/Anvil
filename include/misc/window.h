@@ -184,10 +184,10 @@ namespace Anvil
         }
 
 		/* Returns window's cursor position */
-        virtual void get_cursor_position(uint32_t& x, uint32_t& y) const;
+        virtual void get_cursor_position(int32_t& x, int32_t& y) const;
 
 		/* Set the window's cursor position */
-        virtual void set_cursor_position(uint32_t, uint32_t);
+        virtual void set_cursor_position(int32_t, int32_t);
 
 		/* Hide/show the window's cursor */
         virtual void show_cursor(bool);
@@ -221,14 +221,14 @@ namespace Anvil
         virtual uint32_t get_current_height() const;
 
         /* Returns the current position for this window */
-        virtual uint32_t get_current_x() const;
-        virtual uint32_t get_current_y() const;
+        virtual int32_t get_current_x() const;
+        virtual int32_t get_current_y() const;
 
         /* Set this window's ordering */
         virtual void set_ordering(WindowOrdering order);
 
         /* Set the window position */
-        virtual void set_pos(uint32_t x, uint32_t y);
+        virtual void set_pos(int32_t x, int32_t y);
 
         /* Set the window size */
         virtual void set_size(uint32_t width, uint32_t height);
