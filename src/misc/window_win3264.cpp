@@ -865,7 +865,7 @@ int32_t Anvil::WindowWin3264::get_current_y() const
     return 0;
 }
 
-void Anvil::WindowWin3264::set_pos(uint32_t x, uint32_t y)
+void Anvil::WindowWin3264::set_pos(int32_t x, int32_t y)
 {
     SetWindowPos(m_window,
                  NULL,
