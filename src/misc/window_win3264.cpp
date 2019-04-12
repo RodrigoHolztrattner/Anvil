@@ -584,7 +584,7 @@ void Anvil::WindowWin3264::process_message(HWND   in_window_handle,
                     m_input_callback_collection.windowMinimizeCallback(true);
                 }
             }
-            else if ((in_param_wide & 0xFFF0) == SC_MAXIMIZE && m_input_callback_collection.windowMinimizeCallback)
+            else if ((in_param_wide & 0xFFF0) == SC_RESTORE)
             {
                 m_minimized = false;
 
