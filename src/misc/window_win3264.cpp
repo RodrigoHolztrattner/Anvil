@@ -144,13 +144,14 @@ end:
 }
 
 /** Please see header for specification */
-void Anvil::WindowWin3264::close()
+void Anvil::WindowWin3264::close(bool terminate)
 {
     anvil_assert(m_window_owned);
 
     if (!m_window_should_close)
     {
         m_window_should_close = true;
+        m_terminate_on_close = terminate;
 
         /* NOTE: When the call below leaves, the window is guaranteed to be gone */
         ::SendMessage(m_window,
@@ -312,9 +313,13 @@ LRESULT CALLBACK Anvil::WindowWin3264::msg_callback_pfn_proc(HWND   in_window_ha
         {
             window_ptr->m_window_should_close = true;
 
-            ::PostQuitMessage(0);
-
-            return 0;
+            if (window_ptr->terminate_application_on_close())
+            {
+                ::PostQuitMessage(0);
+                return 0;
+            }
+            
+            break;
         }
 
         case WM_CLOSE:

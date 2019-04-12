@@ -75,7 +75,7 @@ namespace Anvil
 
         virtual ~WindowWin3264(){ /* Stub */ }
 
-        virtual void close();
+        virtual void close(bool terminate = true);
         virtual void run();
 
         /* Returns window's platform */

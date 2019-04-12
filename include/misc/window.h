@@ -157,7 +157,7 @@ namespace Anvil
         virtual ~Window();
 
         /** Closes the window and unblocks the thread executing the message pump. */
-        virtual void close() { /* Stub */ }
+        virtual void close(bool = true) { /* Stub */ }
 
         /** Returns system XCB connection, should be used by linux only */
         virtual void* get_connection() const { return nullptr; }
@@ -287,6 +287,12 @@ namespace Anvil
             return m_cursor_pass_through;
         }
 
+        /* Returns if this window should terminate the application when calling close() */
+        bool terminate_application_on_close() const
+        {
+            return m_terminate_on_close;
+        }
+        
     protected:
         /* protected variables */
         PresentCallbackFunction m_present_callback_func;
@@ -307,6 +313,7 @@ namespace Anvil
         bool            m_visible = true;
         bool            m_manual_poll_render = false;
         bool            m_cursor_pass_through = false;
+        bool            m_terminate_on_close = true;
 
         /* protected functions */
 
