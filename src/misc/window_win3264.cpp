@@ -437,6 +437,26 @@ void Anvil::WindowWin3264::process_message(HWND   in_window_handle,
             break;
 	    }
 
+        case WM_SYSKEYDOWN:
+        {
+            if (m_input_callback_collection.keyCallback)
+            {
+                m_input_callback_collection.keyCallback(InputKey::KEY_LEFT_ALT, static_cast<uint32_t>(in_param_wide), Anvil::InputAction::PRESS, GetInputMods());
+            }
+
+            break;
+        }
+
+        case WM_SYSKEYUP:
+        {
+            if (m_input_callback_collection.keyCallback)
+            {
+                m_input_callback_collection.keyCallback(InputKey::KEY_LEFT_ALT, static_cast<uint32_t>(in_param_wide), Anvil::InputAction::RELEASE, GetInputMods());
+            }
+
+            break;
+        }
+
 	    case WM_LBUTTONDOWN:
 	    {
             if (m_input_callback_collection.mouseButtonCallback)
