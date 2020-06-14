@@ -25,6 +25,8 @@
 #include "misc/debug.h"
 #include "misc/types.h"
 
+#undef IGNORE
+
 namespace Anvil
 {
     namespace Internal
