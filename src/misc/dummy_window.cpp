@@ -32,7 +32,7 @@
 #include <sstream>
 #include <thread>
 
-#include "miniz/miniz.c"
+// #include "miniz/miniz.c"
 
 /** Please see header for specification */
 Anvil::WindowUniquePtr Anvil::DummyWindow::create(const std::string&      in_title,
@@ -429,12 +429,13 @@ void Anvil::DummyWindowWithPNGSnapshots::store_swapchain_frame()
     void*  result_data_ptr  = nullptr;
     size_t result_data_size = 0;
 
+    /*
     result_data_ptr = tdefl_write_image_to_png_file_in_memory(swapchain_image_raw_data_ptr.get(),
                                                               static_cast<int32_t>(swapchain_image_size[0]),
                                                               static_cast<int32_t>(swapchain_image_size[1]),
-                                                              4, /* num_chans */
+                                                              4,
                                                              &result_data_size);
-
+    */
     anvil_assert(result_data_ptr != nullptr);
 
     /* Store it in a file */
